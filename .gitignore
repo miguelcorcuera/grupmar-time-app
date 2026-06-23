@@ -1,0 +1,88 @@
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+node_modules
+dist
+dist-ssr
+.output
+.vinxi
+.tanstack/**
+.nitro
+*.local
+
+# Wrangler / Cloudflare
+.wrangler/
+.dev.vars
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# GrupMar Time - local repair/audit artifacts
+/AUDIT_*/
+/PATCH_*/
+/FIX_*/
+/DIAG_*/
+/AUDITORIAS/
+/*.zip
+/AUDIT_*.txt
+/RUN_*.txt
+/PATCH_*.cjs
+/FIX_*.cjs
+/DIAG_*.cjs
+/RUN_*.cjs
+/FIX_ROUTE_MOJIBAKE.cjs
+/.patch_*.js
+/.patch_*.cjs
+/[0-9][0-9][0-9]_*.sql
+/*copia.env
+/*.bak
+/*.broken
+/dist/
+
+# Local sensitive env files
+.env
+.env.*
+!*example.env
+!.env.example
+
+# Local one-off PowerShell repair scripts
+/INSTALL_*.ps1
+/HOTFIX_*.ps1
+/FIX_*.ps1
+/PATCH_*.ps1
+/AUDIT_*.ps1
+/RUN_*.ps1
+/DIAG_*.ps1
+
+# Local docs/generated files
+/LEEME_*.md
+/*.pdf
+/plantilla_*.csv
+
+# Supabase local temp
+/supabase/.temp/
+
+# Sensitive env
+.env
+.env.*
+!.env.example
+
+# Local/demo seed functions must not be committed
+/supabase/functions/seed-demo/
+
+# Lovable local metadata - not part of GrupMar Time source
+/.lovable/

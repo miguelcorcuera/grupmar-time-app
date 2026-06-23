@@ -1,0 +1,909 @@
+﻿
+/* GrupMar Time — Bizneo inspired local visual redesign */
+:root{
+  --gmt-navy:#14213d;
+  --gmt-blue:#356ef5;
+  --gmt-blue-soft:#eaf2ff;
+  --gmt-sky:#dff0ff;
+  --gmt-mint:#dcfce7;
+  --gmt-lime:#efffd8;
+  --gmt-yellow:#fff4c2;
+  --gmt-rose:#ffe6ee;
+  --gmt-purple:#efe7ff;
+  --gmt-cyan:#ddfbff;
+  --gmt-ink:#16223a;
+  --gmt-muted:#667085;
+  --gmt-line:#e6edf5;
+  --gmt-bg:#f5f8fc;
+  --gmt-card:rgba(255,255,255,.92);
+  --gmt-shadow:0 18px 45px rgba(31,60,112,.10);
+  --gmt-shadow-sm:0 8px 24px rgba(31,60,112,.08);
+}
+
+.gmt-shell{
+  min-height:100vh;
+  display:flex;
+  background:
+    radial-gradient(circle at 8% 15%, rgba(96,165,250,.25), transparent 28%),
+    radial-gradient(circle at 84% 8%, rgba(167,139,250,.20), transparent 30%),
+    linear-gradient(180deg,#f7fbff 0%,#eef5fd 100%);
+  color:var(--gmt-ink);
+}
+
+.gmt-sidebar{
+  width:276px;
+  flex:0 0 276px;
+  padding:24px 18px;
+  background:rgba(255,255,255,.76);
+  backdrop-filter:blur(18px);
+  border-right:1px solid rgba(214,226,241,.9);
+  box-shadow:12px 0 38px rgba(31,60,112,.06);
+  position:sticky;
+  top:0;
+  height:100vh;
+  overflow:auto;
+}
+
+.gmt-brand{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  padding:6px 8px 22px;
+  min-height:78px;
+  position:relative;
+}
+.gmt-brand-lockup{
+  display:flex;
+  align-items:center;
+  justify-content:flex-start;
+  width:166px;
+  height:62px;
+  text-decoration:none;
+  overflow:visible;
+}
+.gmt-brand-wordmark{
+  display:block;
+  width:166px;
+  max-height:62px;
+  object-fit:contain;
+  object-position:left center;
+}
+.gmt-brand-symbol-only{
+  display:none;
+  width:42px;
+  height:42px;
+  object-fit:contain;
+  object-position:center;
+  border-radius:14px;
+}
+.gmt-logo,
+.gmt-logo::before,
+.gmt-brand-title,
+.gmt-brand-sub{display:none!important;}
+
+.gmt-side-section{margin-top:12px;}
+.gmt-side-title{font-size:11px;font-weight:800;letter-spacing:.08em;color:#8a98ad;text-transform:uppercase;padding:12px 12px 6px;}
+.gmt-navlink{
+  display:flex;align-items:center;gap:11px;
+  padding:11px 12px;border-radius:14px;
+  color:#344054;font-size:14px;font-weight:650;
+  text-decoration:none;transition:.18s ease;
+  margin:3px 0;
+}
+.gmt-navlink:hover{background:#eef5ff;color:#174ea6;transform:translateX(2px);}
+.gmt-navlink-active{
+  background:linear-gradient(135deg,#356ef5,#6ea8ff);
+  color:white!important;
+  box-shadow:0 12px 24px rgba(53,110,245,.24);
+}
+.gmt-navlink-active svg{color:white;}
+.gmt-nav-small{font-size:12px;color:#667085;margin-left:39px;margin-top:-5px;margin-bottom:6px;}
+
+.gmt-main{flex:1;min-width:0;}
+.gmt-topbar{
+  height:72px; display:flex; align-items:center; justify-content:space-between;
+  padding:0 34px; background:rgba(255,255,255,.72);
+  backdrop-filter:blur(16px); border-bottom:1px solid rgba(214,226,241,.85);
+  position:sticky; top:0; z-index:20;
+}
+.gmt-top-tabs{display:flex;align-items:center;gap:22px;color:#667085;font-size:14px;font-weight:650;}
+.gmt-top-tab{padding:25px 0 21px;border-bottom:3px solid transparent;}
+.gmt-top-tab-active{color:#14213d;border-color:#356ef5;}
+.gmt-top-actions{display:flex;align-items:center;gap:12px;}
+.gmt-icon-btn{width:38px;height:38px;border-radius:14px;border:1px solid #dbe7f5;background:white;display:grid;place-items:center;box-shadow:var(--gmt-shadow-sm);}
+.gmt-avatar{width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,#ffe4b5,#9be7ff);display:grid;place-items:center;font-weight:900;color:#102045;}
+
+.gmt-page{padding:30px 34px 50px;}
+.gmt-version{
+  display:inline-flex;align-items:center;gap:8px;border:1px solid #bdd7ff;background:#eef6ff;color:#2857b9;
+  border-radius:999px;padding:7px 12px;font-size:12px;font-weight:800;box-shadow:var(--gmt-shadow-sm);
+}
+.gmt-hero{
+  display:grid;grid-template-columns:1.35fr .65fr;gap:22px;margin-top:18px;margin-bottom:24px;
+}
+.gmt-hero-card{
+  border-radius:28px;background:linear-gradient(135deg,#ffffff 0%,#f3f8ff 100%);
+  border:1px solid rgba(219,231,245,.95);box-shadow:var(--gmt-shadow);
+  padding:28px;position:relative;overflow:hidden;
+}
+.gmt-hero-card::after{
+  content:"";position:absolute;right:-80px;top:-80px;width:220px;height:220px;border-radius:999px;
+  background:radial-gradient(circle,rgba(53,110,245,.18),transparent 68%);
+}
+.gmt-kicker{color:#356ef5;font-size:13px;font-weight:900;letter-spacing:.08em;text-transform:uppercase;}
+.gmt-title{font-size:34px;font-weight:950;letter-spacing:-.04em;line-height:1.05;margin:8px 0;color:#14213d;}
+.gmt-subtitle{font-size:15px;color:#667085;max-width:760px;}
+.gmt-quick-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin-top:24px;}
+.gmt-stat-card{
+  background:var(--gmt-card);border:1px solid #e1ebf7;border-radius:22px;padding:18px;box-shadow:var(--gmt-shadow-sm);
+  min-height:112px;text-decoration:none;color:inherit;transition:.18s ease;position:relative;overflow:hidden;
+}
+.gmt-stat-card:hover{transform:translateY(-3px);box-shadow:0 18px 40px rgba(31,60,112,.12);}
+.gmt-stat-icon{width:38px;height:38px;border-radius:14px;display:grid;place-items:center;background:#eef5ff;color:#356ef5;margin-bottom:12px;}
+.gmt-stat-label{font-size:13px;color:#667085;font-weight:700;}
+.gmt-stat-value{font-size:28px;font-weight:950;color:#14213d;margin-top:3px;}
+.gmt-stat-help{font-size:12px;color:#7a879a;margin-top:6px;}
+.gmt-panel{background:var(--gmt-card);border:1px solid #e1ebf7;border-radius:24px;box-shadow:var(--gmt-shadow);padding:20px;}
+.gmt-panel-title{font-size:18px;font-weight:900;color:#14213d;}
+.gmt-pill{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:6px 10px;background:#eef5ff;color:#2857b9;font-size:12px;font-weight:800;}
+
+.gmt-toolbar{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;margin:18px 0;}
+.gmt-segment{display:inline-flex;border:1px solid #dce8f5;background:white;border-radius:16px;padding:4px;box-shadow:var(--gmt-shadow-sm);}
+.gmt-seg-btn{border:0;background:transparent;border-radius:12px;padding:8px 14px;font-size:13px;font-weight:800;color:#667085;}
+.gmt-seg-btn[data-active="true"]{background:#e9f1ff;color:#2857b9;box-shadow:inset 0 0 0 1px #c6dbff;}
+.gmt-primary{
+  background:linear-gradient(135deg,#356ef5,#235adf)!important;color:white!important;border:0!important;border-radius:14px!important;box-shadow:0 12px 26px rgba(53,110,245,.25)!important;
+}
+.gmt-secondary{background:white!important;border:1px solid #dce8f5!important;border-radius:14px!important;color:#344054!important;box-shadow:var(--gmt-shadow-sm)!important;}
+
+.gmt-planner{
+  display:grid;grid-template-columns:230px repeat(7,minmax(132px,1fr));overflow:auto;
+  border:1px solid #e1ebf7;border-radius:24px;background:white;box-shadow:var(--gmt-shadow);
+}
+.gmt-planner-cell,.gmt-planner-head,.gmt-planner-employee{
+  border-right:1px solid #eaf0f7;border-bottom:1px solid #eaf0f7;min-height:94px;padding:10px;
+}
+.gmt-planner-head{min-height:54px;background:#fbfdff;font-size:12px;font-weight:900;color:#667085;display:flex;align-items:center;justify-content:center;position:sticky;top:0;z-index:5;}
+.gmt-planner-corner{position:sticky;left:0;z-index:7;background:#fbfdff;justify-content:flex-start;}
+.gmt-planner-employee{position:sticky;left:0;z-index:4;background:#fff;display:flex;align-items:center;gap:10px;}
+.gmt-emp-avatar{width:38px;height:38px;border-radius:50%;display:grid;place-items:center;font-weight:900;color:#14213d;background:linear-gradient(135deg,#dbeafe,#fce7f3);}
+.gmt-emp-name{font-weight:900;font-size:13px;color:#16223a;max-width:145px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.gmt-emp-meta{font-size:11px;color:#8792a6;}
+.gmt-shift-chip{
+  border-radius:14px;padding:9px 10px;margin-bottom:7px;border:1px solid rgba(20,33,61,.08);font-size:12px;font-weight:850;
+  box-shadow:0 8px 16px rgba(31,60,112,.08);cursor:pointer;transition:.15s ease;
+}
+.gmt-shift-chip:hover{transform:translateY(-2px);}
+.gmt-shift-blue{background:#e3f0ff;border-color:#b8d7ff;color:#174ea6;}
+.gmt-shift-purple{background:#efe7ff;border-color:#d7c8ff;color:#5936b2;}
+.gmt-shift-yellow{background:#fff4c2;border-color:#ffe087;color:#8a5b00;}
+.gmt-shift-green{background:#e7fbdf;border-color:#bceba8;color:#267142;}
+.gmt-shift-pink{background:#ffe6ee;border-color:#ffc2d5;color:#a32d59;}
+.gmt-shift-free{background:#fff;border:1px dashed #cad7e8;color:#8792a6;}
+.gmt-add-cell{display:flex;align-items:center;justify-content:center;border:1px dashed #c8d8ed;border-radius:14px;height:42px;color:#356ef5;background:#f8fbff;font-weight:900;}
+.gmt-notif-card{display:flex;gap:12px;padding:12px;border-radius:18px;background:white;border:1px solid #e6edf5;margin-top:10px;}
+.gmt-notif-dot{width:38px;height:38px;border-radius:14px;display:grid;place-items:center;background:#eef5ff;color:#356ef5;flex:0 0 auto;}
+
+.gmt-modal-backdrop{position:fixed;inset:0;background:rgba(15,23,42,.35);z-index:50;display:grid;place-items:center;padding:24px;}
+.gmt-modal{width:min(720px,96vw);max-height:90vh;overflow:auto;background:white;border-radius:28px;box-shadow:0 30px 90px rgba(15,23,42,.25);border:1px solid #e1ebf7;padding:24px;}
+.gmt-form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;}
+.gmt-day-row{display:grid;grid-template-columns:90px 1fr 1fr 46px 80px;gap:10px;align-items:center;margin:8px 0;}
+.gmt-input{border:1px solid #dce8f5;border-radius:12px;padding:9px 11px;background:white;font-size:13px;width:100%;}
+
+@media (max-width: 1100px){
+  .gmt-sidebar{width:86px;flex-basis:86px;padding:18px 10px;}
+  .gmt-brand-title,.gmt-brand-sub,.gmt-side-title,.gmt-navlink span,.gmt-nav-small{display:none;}
+  .gmt-navlink{justify-content:center;padding:12px;}
+  .gmt-hero{grid-template-columns:1fr;}
+  .gmt-quick-grid{grid-template-columns:repeat(2,minmax(0,1fr));}
+}
+@media (max-width: 760px){
+  .gmt-shell{display:block;}
+  .gmt-sidebar{position:relative;width:100%;height:auto;display:flex;overflow-x:auto;gap:8px;border-right:0;border-bottom:1px solid #e1ebf7;}
+  .gmt-brand{padding:4px 8px}.gmt-logo{width:36px;height:36px;border-radius:12px}
+  .gmt-side-section{display:flex;margin:0;gap:4px}.gmt-navlink{white-space:nowrap}
+  .gmt-topbar{height:auto;padding:14px 16px;align-items:flex-start;gap:12px}.gmt-top-tabs{overflow:auto;gap:14px}
+  .gmt-page{padding:18px 14px 32px}.gmt-title{font-size:28px}
+  .gmt-quick-grid{grid-template-columns:1fr}.gmt-form-grid{grid-template-columns:1fr}
+  .gmt-planner{grid-template-columns:170px repeat(7,124px)}
+  .gmt-hero-card{padding:20px}
+}
+
+
+/* v7.1 — sidebar retractil y colores uniformes por trabajador */
+.gmt-brand{position:relative;}
+.gmt-brand-copy{min-width:0;}
+.gmt-collapse-btn{
+  margin-left:auto;
+  width:34px;
+  height:34px;
+  border-radius:14px;
+  border:1px solid #dce8f5;
+  background:rgba(255,255,255,.92);
+  color:#344054;
+  display:grid;
+  place-items:center;
+  box-shadow:var(--gmt-shadow-sm);
+  transition:.18s ease;
+}
+.gmt-collapse-btn:hover{transform:translateY(-1px);color:#14213d;border-color:#bfd5f1;}
+
+.gmt-sidebar-collapsed{
+  width:86px!important;
+  flex-basis:86px!important;
+  padding-left:10px!important;
+  padding-right:10px!important;
+}
+.gmt-sidebar-collapsed .gmt-brand{justify-content:center;padding-left:0;padding-right:0;}
+.gmt-sidebar-collapsed .gmt-brand-copy,
+.gmt-sidebar-collapsed .gmt-side-title,
+.gmt-sidebar-collapsed .gmt-navlink span,
+.gmt-sidebar-collapsed .gmt-nav-small,
+.gmt-sidebar-collapsed .mt-6.rounded-3xl{display:none!important;}
+.gmt-sidebar-collapsed .gmt-navlink{justify-content:center;padding:12px;margin:5px 0;}
+.gmt-sidebar-collapsed .gmt-brand-lockup{width:46px;height:46px;justify-content:center;}
+.gmt-sidebar-collapsed .gmt-brand-wordmark{display:none!important;}
+.gmt-sidebar-collapsed .gmt-brand-symbol-only{display:block!important;}
+.gmt-sidebar-collapsed .gmt-collapse-btn{position:absolute;right:-18px;top:12px;z-index:30;background:white;}
+
+.gmt-employee-shift-a{background:#fff4c7!important;border-color:#f3d67b!important;color:#3b2f12!important;}
+.gmt-employee-shift-b{background:#dcfce7!important;border-color:#9be7b6!important;color:#173b25!important;}
+.gmt-employee-shift-c{background:#eee7ff!important;border-color:#d5c6ff!important;color:#302155!important;}
+.gmt-employee-shift-d{background:#ffe4ec!important;border-color:#ffc3d2!important;color:#512033!important;}
+.gmt-employee-shift-e{background:#dff0ff!important;border-color:#acd7ff!important;color:#19344f!important;}
+.gmt-employee-shift-f{background:#f3eadb!important;border-color:#dfcdb2!important;color:#4a3825!important;}
+.gmt-shift-permission{background:#fee2e2!important;border-color:#fecaca!important;color:#7f1d1d!important;}
+
+.gmt-planner-cell .gmt-shift-chip{
+  min-height:68px;
+}
+.gmt-planner-employee .gmt-emp-avatar{
+  border:1px solid rgba(20,33,61,.08);
+  box-shadow:0 8px 16px rgba(31,60,112,.08);
+}
+@media (min-width: 1101px){
+  .gmt-sidebar-collapsed + .gmt-main .gmt-page{padding-left:28px;padding-right:28px;}
+}
+
+
+/* v7.2 — horas semanales y color único por trabajador */
+.gmt-planner{grid-template-columns:250px repeat(7,minmax(132px,1fr));}
+.gmt-planner-employee{align-items:center;}
+.gmt-planner-cell .gmt-shift-chip[style]{border-style:solid;}
+.gmt-emp-name{max-width:170px;}
+
+
+/* v7.3 — drag & drop de turnos */
+.gmt-planner-cell{
+  transition: background-color .15s ease, box-shadow .15s ease, outline-color .15s ease;
+}
+.gmt-planner-cell.gmt-drop-target{
+  background:rgba(53,110,245,.06);
+  outline:2px dashed rgba(53,110,245,.45);
+  outline-offset:-8px;
+  box-shadow:inset 0 0 0 999px rgba(255,255,255,.12);
+}
+.gmt-dragging{
+  opacity:.55;
+  transform:scale(.98);
+  box-shadow:0 18px 32px rgba(15,23,42,.16)!important;
+}
+.gmt-shift-chip[draggable="true"]{
+  user-select:none;
+}
+.gmt-shift-chip[draggable="true"]:hover::after{
+  content:"Arrastrar";
+  float:right;
+  font-size:10px;
+  padding:2px 6px;
+  border-radius:999px;
+  background:rgba(255,255,255,.65);
+  color:rgba(15,23,42,.65);
+}
+
+
+/* v7.4 — plantilla semanal L-V */
+.gmt-week-template-panel{
+  margin:16px 0;
+  border:1px solid #e1ebf7;
+  background:linear-gradient(135deg,rgba(255,255,255,.96),rgba(245,250,255,.92));
+  box-shadow:var(--gmt-shadow-sm);
+  border-radius:24px;
+  padding:18px;
+}
+.gmt-template-icon{
+  width:44px;
+  height:44px;
+  flex:0 0 auto;
+  display:grid;
+  place-items:center;
+  border-radius:16px;
+  background:#111827;
+  color:white;
+  box-shadow:0 12px 24px rgba(15,23,42,.18);
+}
+.gmt-template-grid{
+  margin-top:14px;
+  display:grid;
+  grid-template-columns: minmax(220px,1fr) minmax(260px,1.2fr) minmax(160px,.7fr) minmax(220px,1fr) auto;
+  gap:12px;
+  align-items:end;
+}
+.gmt-template-total{
+  border:1px solid #e6edf5;
+  background:white;
+  border-radius:18px;
+  padding:10px 12px;
+  min-height:74px;
+}
+.gmt-template-check{
+  min-height:74px;
+  border:1px solid #e6edf5;
+  background:white;
+  border-radius:18px;
+  padding:12px;
+  display:flex;
+  align-items:center;
+  gap:10px;
+  font-size:12px;
+  font-weight:800;
+  color:#344054;
+}
+.gmt-template-check input{width:16px;height:16px;}
+.gmt-row-template-btn{
+  margin-top:6px;
+  border:1px solid #dce8f5;
+  background:rgba(255,255,255,.88);
+  color:#2857b9;
+  font-size:11px;
+  font-weight:900;
+  border-radius:999px;
+  padding:3px 8px;
+  box-shadow:0 6px 12px rgba(31,60,112,.06);
+}
+.gmt-row-template-btn:hover{border-color:#9fc2f4;background:#eef6ff;}
+
+@media (max-width: 1200px){
+  .gmt-template-grid{grid-template-columns:1fr 1fr;}
+}
+@media (max-width: 760px){
+  .gmt-template-grid{grid-template-columns:1fr;}
+}
+
+
+/* v7.5 — Paleta más cercana a Bizneo: cálida, profesional y menos agresiva */
+:root{
+  --gmt-navy:#20283a;
+  --gmt-ink:#253047;
+  --gmt-muted:#70788a;
+  --gmt-bg:#f7f4ef;
+  --gmt-card:rgba(255,255,255,.92);
+  --gmt-line:#e7e2da;
+  --gmt-blue:#6f8ff7;
+  --gmt-blue-soft:#eef3ff;
+  --gmt-cream:#f3eee6;
+  --gmt-cream-2:#fbf8f3;
+  --gmt-active:#e9e4da;
+  --gmt-shadow:0 18px 45px rgba(32,40,58,.08);
+  --gmt-shadow-sm:0 8px 24px rgba(32,40,58,.06);
+}
+
+.gmt-shell{
+  background:
+    radial-gradient(circle at 6% 14%, rgba(185,207,255,.36), transparent 28%),
+    radial-gradient(circle at 93% 0%, rgba(231,224,212,.72), transparent 32%),
+    linear-gradient(180deg,#fbfaf7 0%,#f4f1ec 100%) !important;
+  color:var(--gmt-ink)!important;
+}
+
+.gmt-sidebar{
+  background:rgba(250,248,244,.86)!important;
+  border-right:1px solid rgba(226,220,210,.95)!important;
+  box-shadow:12px 0 38px rgba(32,40,58,.045)!important;
+}
+
+.gmt-logo{
+  background:linear-gradient(135deg,#ffffff,#e9eefb)!important;
+  color:#20283a!important;
+  border:1px solid #e3ded5!important;
+  box-shadow:0 12px 28px rgba(32,40,58,.10)!important;
+}
+
+.gmt-logo::before{
+  content:"b";
+  font-family:Georgia,serif;
+  font-size:26px;
+  font-weight:900;
+  transform:none;
+}
+
+.gmt-brand-title{
+  color:#20283a!important;
+  font-weight:950!important;
+  letter-spacing:-.04em;
+}
+
+.gmt-brand-sub,
+.gmt-side-title,
+.gmt-stat-label,
+.gmt-stat-help,
+.gmt-subtitle,
+.gmt-emp-meta,
+.text-muted-foreground{
+  color:#70788a!important;
+}
+
+.gmt-navlink{
+  color:#354055!important;
+  border:1px solid transparent;
+  font-weight:760!important;
+}
+
+.gmt-navlink:hover{
+  background:#f1eee8!important;
+  color:#20283a!important;
+  transform:translateX(2px);
+}
+
+.gmt-navlink-active{
+  background:#e9e4da!important;
+  color:#20283a!important;
+  box-shadow:inset 0 0 0 1px #ddd5ca, 0 12px 24px rgba(32,40,58,.07)!important;
+}
+
+.gmt-navlink-active svg{
+  color:#20283a!important;
+}
+
+.gmt-topbar{
+  background:rgba(255,255,255,.78)!important;
+  border-bottom:1px solid rgba(226,220,210,.95)!important;
+}
+
+.gmt-top-tabs{
+  color:#6d7486!important;
+}
+
+.gmt-top-tab-active{
+  color:#20283a!important;
+  border-color:#6f8ff7!important;
+}
+
+.gmt-icon-btn,
+.gmt-collapse-btn{
+  border:1px solid #e3ded5!important;
+  background:rgba(255,255,255,.92)!important;
+  color:#354055!important;
+}
+
+.gmt-avatar{
+  background:linear-gradient(135deg,#dfe9ff,#f3eee6)!important;
+  color:#20283a!important;
+  border:1px solid #e3ded5;
+}
+
+.gmt-page{
+  color:#253047!important;
+}
+
+.gmt-version,
+.gmt-pill{
+  border:1px solid #e3ded5!important;
+  background:#fbf8f3!important;
+  color:#576070!important;
+  box-shadow:var(--gmt-shadow-sm)!important;
+}
+
+.gmt-hero-card,
+.gmt-panel,
+.gmt-stat-card,
+.gmt-week-template-panel{
+  background:rgba(255,255,255,.90)!important;
+  border:1px solid #e7e2da!important;
+  box-shadow:var(--gmt-shadow)!important;
+}
+
+.gmt-hero-card::after{
+  background:radial-gradient(circle,rgba(111,143,247,.13),transparent 68%)!important;
+}
+
+.gmt-kicker{
+  color:#6f8ff7!important;
+}
+
+.gmt-title,
+.gmt-panel-title,
+.gmt-stat-value,
+.gmt-emp-name{
+  color:#20283a!important;
+}
+
+.gmt-primary{
+  background:#20283a!important;
+  color:white!important;
+  border:1px solid #20283a!important;
+  box-shadow:0 12px 26px rgba(32,40,58,.18)!important;
+}
+
+.gmt-primary:hover{
+  background:#151c2d!important;
+}
+
+.gmt-secondary{
+  background:#ffffff!important;
+  border:1px solid #e3ded5!important;
+  color:#354055!important;
+  box-shadow:var(--gmt-shadow-sm)!important;
+}
+
+.gmt-secondary:hover{
+  background:#fbf8f3!important;
+  border-color:#d7cfc3!important;
+}
+
+.gmt-segment{
+  background:#f3eee6!important;
+  border:1px solid #e3ded5!important;
+  box-shadow:none!important;
+}
+
+.gmt-seg-btn{
+  color:#6d7486!important;
+}
+
+.gmt-seg-btn[data-active="true"]{
+  background:#ded8ce!important;
+  color:#20283a!important;
+  box-shadow:inset 0 0 0 1px #d2cabf!important;
+}
+
+.gmt-planner{
+  background:#ffffff!important;
+  border:1px solid #e7e2da!important;
+  box-shadow:var(--gmt-shadow)!important;
+}
+
+.gmt-planner-head{
+  background:#fbfaf7!important;
+  color:#596174!important;
+  border-color:#eee9e1!important;
+}
+
+.gmt-planner-corner,
+.gmt-planner-employee{
+  background:#ffffff!important;
+}
+
+.gmt-planner-cell,
+.gmt-planner-employee{
+  border-color:#eee9e1!important;
+}
+
+.gmt-add-cell{
+  border:1px dashed #cbd7f8!important;
+  background:#fbfdff!important;
+  color:#5f7ff0!important;
+  font-weight:900!important;
+}
+
+.gmt-add-cell:hover{
+  background:#f1f5ff!important;
+}
+
+/* Turnos: colores únicos, pero menos chillones y más Bizneo */
+.gmt-shift-chip{
+  box-shadow:0 8px 16px rgba(32,40,58,.055)!important;
+  font-weight:850!important;
+}
+
+.gmt-shift-chip[style]{
+  filter:saturate(.78) brightness(1.03);
+}
+
+/* Panel plantilla semanal */
+.gmt-template-icon{
+  background:#20283a!important;
+  box-shadow:0 12px 24px rgba(32,40,58,.16)!important;
+}
+
+.gmt-template-total,
+.gmt-template-check{
+  background:#fbfaf7!important;
+  border-color:#e7e2da!important;
+  color:#354055!important;
+}
+
+/* Dropdowns / inputs premium acorde a Bizneo */
+.gmt-input,
+select.gmt-input,
+input.gmt-input,
+.gmt-panel select,
+.gmt-week-template-panel select,
+.gmt-week-template-panel input,
+.gmt-form-grid select,
+.gmt-form-grid input{
+  min-height:42px;
+  border:1px solid #ded8ce!important;
+  background-color:#fffdf9!important;
+  color:#20283a!important;
+  border-radius:14px!important;
+  box-shadow:inset 0 1px 2px rgba(32,40,58,.035), 0 6px 16px rgba(32,40,58,.035)!important;
+  font-weight:720;
+  outline:none!important;
+}
+
+.gmt-input:focus,
+.gmt-panel select:focus,
+.gmt-week-template-panel select:focus,
+.gmt-week-template-panel input:focus,
+.gmt-form-grid select:focus,
+.gmt-form-grid input:focus{
+  border-color:#8da5f8!important;
+  box-shadow:0 0 0 4px rgba(111,143,247,.14), inset 0 1px 2px rgba(32,40,58,.035)!important;
+}
+
+select.gmt-input,
+.gmt-panel select,
+.gmt-week-template-panel select,
+.gmt-form-grid select{
+  appearance:none;
+  -webkit-appearance:none;
+  background-image:
+    linear-gradient(45deg, transparent 50%, #6d7486 50%),
+    linear-gradient(135deg, #6d7486 50%, transparent 50%);
+  background-position:
+    calc(100% - 18px) 52%,
+    calc(100% - 12px) 52%;
+  background-size:6px 6px,6px 6px;
+  background-repeat:no-repeat;
+  padding-right:36px!important;
+}
+
+select.gmt-input option{
+  background:#fffdf9;
+  color:#20283a;
+  font-weight:650;
+}
+
+.gmt-row-template-btn{
+  background:#fbf8f3!important;
+  border-color:#e3ded5!important;
+  color:#4f5f9f!important;
+}
+
+.gmt-row-template-btn:hover{
+  background:#eef3ff!important;
+  border-color:#b9c8fb!important;
+}
+
+.gmt-drop-target{
+  background:rgba(111,143,247,.08)!important;
+  outline-color:rgba(111,143,247,.42)!important;
+}
+
+.gmt-dragging{
+  box-shadow:0 18px 32px rgba(32,40,58,.18)!important;
+}
+
+/* Pequeños ajustes de legibilidad: menos negro puro */
+.gmt-planner,
+.gmt-panel,
+.gmt-hero-card,
+.gmt-stat-card,
+.gmt-week-template-panel{
+  color:#253047!important;
+}
+
+.gmt-planner strong,
+.gmt-planner b,
+.gmt-week-template-panel strong,
+.gmt-week-template-panel b{
+  color:#20283a!important;
+}
+
+@media (max-width:760px){
+  .gmt-sidebar{
+    background:rgba(250,248,244,.94)!important;
+  }
+}
+
+
+/* v10 celebraciones */
+.gmt-stat-icon.gmt-shift-yellow{background:#fff4c7;color:#6f5200;}
+
+
+/* v13.1 · logo original global */
+.gmt-top-brand-logo{
+  height:44px;
+  width:auto;
+  max-width:178px;
+  object-fit:contain;
+  object-position:left center;
+  display:block;
+}
+@media (max-width: 640px){
+  .gmt-top-brand-logo{height:38px;max-width:148px;}
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* === GRUPMAR TIME v16.3.8 LOGO ORIGINAL CLEAN START === */
+/* Logo original negro transparente. Fondo configurable desde --gmt-logo-bg. */
+.gmt-brand {
+  background: var(--gmt-logo-bg, transparent) !important;
+  border-color: transparent !important;
+}
+
+.gmt-brand-lockup {
+  background: var(--gmt-logo-bg, transparent) !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  filter: none !important;
+  opacity: 1 !important;
+  
+  padding: 0 !important;
+}
+
+.gmt-brand img,
+.gmt-brand-wordmark,
+.gmt-brand-symbol-only {
+  background: transparent !important;
+  background-color: transparent !important;
+  background-image: none !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  filter: none !important;
+  opacity: 1 !important;
+  
+  object-fit: contain !important;
+}
+/* === GRUPMAR TIME v16.3.8 LOGO ORIGINAL CLEAN END === */
+
+
+
+
+
+/* === GRUPMAR TIME v16.3.10 LOGO BG INDEPENDENT START === */
+/*
+  Fondo independiente del logotipo.
+  El logo NO debe heredar:
+  - menu activo
+  - botones principales
+  - fondo general
+  - fondo suave
+*/
+html body .gmt-sidebar .gmt-brand,
+html body .gmt-brand {
+  background: var(--gmt-logo-bg, transparent) !important;
+  background-color: var(--gmt-logo-bg, transparent) !important;
+  background-image: none !important;
+}
+
+html body .gmt-sidebar .gmt-brand-lockup,
+html body .gmt-brand-lockup,
+html body .gmt-brand-lockup[class*="bg-"],
+html body .gmt-brand .gmt-brand-lockup[class*="bg-"] {
+  background: var(--gmt-logo-bg, transparent) !important;
+  background-color: var(--gmt-logo-bg, transparent) !important;
+  background-image: none !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  overflow: visible !important;
+}
+
+html body .gmt-brand img,
+html body .gmt-brand-wordmark,
+html body .gmt-brand-symbol-only {
+  background: transparent !important;
+  background-color: transparent !important;
+  background-image: none !important;
+  filter: none !important;
+  opacity: 1 !important;
+  object-fit: contain !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  mix-blend-mode: normal !important;
+}
+
+/* Si alguna clase activa se cuela en el bloque del logo, queda neutralizada sólo dentro del logo. */
+html body .gmt-brand .bg-blue-600,
+html body .gmt-brand .bg-sky-600,
+html body .gmt-brand .bg-indigo-600,
+html body .gmt-brand .bg-slate-900,
+html body .gmt-brand .gmt-navlink-active,
+html body .gmt-brand [aria-current="page"] {
+  background: var(--gmt-logo-bg, transparent) !important;
+  background-color: var(--gmt-logo-bg, transparent) !important;
+  color: inherit !important;
+}
+/* === GRUPMAR TIME v16.3.10 LOGO BG INDEPENDENT END === */
+
+/* === GRUPMAR TIME v16.19.31 ADMIN FIXED REAL START === */
+/* Marquesina global arriba */
+html body #grupmar-global-db-ticker{
+  position:fixed !important;
+  left:0 !important;
+  right:0 !important;
+  top:0 !important;
+  z-index:2147483000 !important;
+}
+
+/* Sidebar admin fijo debajo de la marquesina */
+html body .gmt-admin-sidebar-fixed{
+  position:fixed !important;
+  left:0 !important;
+  top:30px !important;
+  bottom:0 !important;
+  width:218px !important;
+  z-index:2147482500 !important;
+  overflow-y:auto !important;
+  overflow-x:hidden !important;
+  overscroll-behavior:contain !important;
+}
+
+/* Main admin separado del sidebar y con hueco para topbar */
+html body .gmt-admin-main-fixed-offset{
+  margin-left:218px !important;
+  padding-top:88px !important;
+  min-height:calc(100vh - 30px) !important;
+  width:calc(100% - 218px) !important;
+}
+
+/* Topbar admin fijo debajo de la marquesina */
+html body .gmt-admin-main-fixed-offset .gmt-topbar{
+  position:fixed !important;
+  left:218px !important;
+  right:0 !important;
+  top:30px !important;
+  height:58px !important;
+  z-index:2147482400 !important;
+  background:rgba(255,255,255,.96) !important;
+  backdrop-filter:blur(14px) !important;
+  border-bottom:1px solid rgba(203,213,225,.9) !important;
+  box-shadow:0 8px 22px rgba(15,23,42,.08) !important;
+}
+
+/* Si el sidebar está colapsado, conservar ancho visual anterior si la app lo gestiona */
+html body .gmt-admin-sidebar-fixed.gmt-sidebar-collapsed + .gmt-admin-main-fixed-offset{
+  margin-left:78px !important;
+  width:calc(100% - 78px) !important;
+}
+
+html body .gmt-admin-sidebar-fixed.gmt-sidebar-collapsed + .gmt-admin-main-fixed-offset .gmt-topbar{
+  left:78px !important;
+}
+
+@media (max-width: 900px){
+  html body .gmt-admin-sidebar-fixed{
+    position:relative !important;
+    top:auto !important;
+    bottom:auto !important;
+    width:100% !important;
+  }
+
+  html body .gmt-admin-main-fixed-offset{
+    margin-left:0 !important;
+    width:100% !important;
+    padding-top:30px !important;
+  }
+
+  html body .gmt-admin-main-fixed-offset .gmt-topbar{
+    position:sticky !important;
+    left:auto !important;
+    right:auto !important;
+    top:30px !important;
+  }
+}
+/* === GRUPMAR TIME v16.19.31 ADMIN FIXED REAL END === */
