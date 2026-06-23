@@ -197,22 +197,44 @@ function CheckinMessagesAdmin() {
 
   function toggleIconString(current: string | undefined, emoji: string) {
     const list = iconList(current);
-    return list.includes(emoji) ? list.filter((x) => x !== emoji).join(" ") : [...list, emoji].join(" ");
+    const idx = list.lastIndexOf(emoji);
+
+    if (idx >= 0) {
+      list.splice(idx, 1);
+    }
+
+    return list.join(" ");
   }
 
   function appendIconString(current: string | undefined, emoji: string) {
-    const list = iconList(current);
-    return list.includes(emoji) ? list.join(" ") : [...list, emoji].join(" ");
+    return [String(current || "").trim(), emoji].filter(Boolean).join(" ").trim();
   }
 
-  function selectedIconPills(value: string, onRemove: (emoji: string) => void) {
+  function removeIconAtIndex(current: string | undefined, index: number) {
+    const list = iconList(current);
+    list.splice(index, 1);
+    return list.join(" ");
+  }
+
+  function selectedIconPills(value: string, onRemove: (emoji: string, index: number) => void) {
     const list = iconList(value);
-    if (!list.length) return <span className="text-xs font-medium text-slate-400">Sin iconos seleccionados.</span>;
+
+    if (!list.length) {
+      return <span className="text-xs font-medium text-slate-400">Sin iconos seleccionados.</span>;
+    }
+
     return (
       <div className="flex flex-wrap gap-1.5">
-        {list.map((emoji) => (
-          <button key={emoji} type="button" onClick={() => onRemove(emoji)} className="rounded-full border border-sky-200 bg-sky-50 px-2.5 py-1 text-sm font-black text-sky-900 hover:bg-rose-50 hover:text-rose-700" title="Quitar icono">
-            {emoji} ×
+        {list.map((emoji, index) => (
+          <button
+            key={`${emoji}-${index}`}
+            type="button"
+            onClick={() => onRemove(emoji, index)}
+            className="rounded-lg border border-red-200 bg-red-50 px-3 py-1.5 text-xs font-black text-red-700 hover:bg-red-100"
+            title="Quitar este icono"
+          >
+            <span>{emoji}</span>
+            <span className="text-xs text-slate-500">×</span>
           </button>
         ))}
       </div>
@@ -272,8 +294,15 @@ function CheckinMessagesAdmin() {
   }
 
   function persistTicker(next: typeof tickerSettings) {
+    // Editar en pantalla NO guarda en BD y NO publica.
+    setTickerSettings(next);
+  }
+
+  function saveTickerSettingsToDb(next: typeof tickerSettings) {
     setTickerSettings(next);
     saveCompanyTickerSettings(next);
+    window.dispatchEvent(new Event("gmt:ticker-refresh"));
+    window.dispatchEvent(new Event("grupmar-company-ticker-settings-changed"));
   }
 
   function updateTicker(id: string, patch: Partial<CompanyTickerMessage>, keepPublished = false) {
@@ -308,33 +337,164 @@ function CheckinMessagesAdmin() {
 
   function publishTicker(message: CompanyTickerMessage) {
     const today = new Date().toISOString().slice(0, 10);
-    updateTicker(message.id, {
-      enabled: true,
-      published: true,
-      publishedAt: new Date().toISOString(),
-      startDate: message.publishMode === "default24h" ? today : message.startDate,
-      endDate: message.publishMode === "default24h" ? tomorrowDate() : message.endDate,
-    }, true);
+
+    const next = {
+      ...tickerSettings,
+      messages: tickerSettings.messages.map((m) =>
+        m.id === message.id
+          ? {
+              ...m,
+              enabled: true,
+              published: true,
+              publishedAt: new Date().toISOString(),
+              startDate: m.publishMode === "default24h" ? today : m.startDate,
+              endDate: m.publishMode === "default24h" ? tomorrowDate() : m.endDate,
+            }
+          : m,
+      ),
+    };
+
+    saveTickerSettingsToDb(next);
     toast.success(message.publishMode === "default24h" ? "Aviso publicado por 24 horas." : "Aviso publicado según el rango de fechas.");
   }
 
   function unpublishTicker(message: CompanyTickerMessage) {
-    updateTicker(message.id, { published: false }, true);
-    toast.info("Aviso retirado de la marquesina pública.");
+    const next = {
+      ...tickerSettings,
+      messages: tickerSettings.messages.map((m) =>
+        m.id === message.id ? { ...m, published: false } : m,
+      ),
+    };
+
+    saveTickerSettingsToDb(next);
+    toast.info("Aviso retirado de la marquesina.");
   }
 
   function saveTickerDraft() {
-    saveCompanyTickerSettings(tickerSettings);
+    if (!selectedTicker) {
+      toast.error("Selecciona un aviso.");
+      return;
+    }
+
+    const next = {
+      ...tickerSettings,
+      messages: tickerSettings.messages.map((m) =>
+        m.id === selectedTicker.id ? { ...m, published: false } : m,
+      ),
+    };
+
+    saveTickerSettingsToDb(next);
     toast.success("Borrador guardado. No se publica hasta pulsar Publicar aviso.");
   }
 
   function saveAll() {
     saveCheckinMessageSettings(settings);
-    saveCompanyTickerSettings(tickerSettings);
-    toast.success("Comunicados y marquesina guardados.");
+
+    const tickerDrafts = {
+      ...tickerSettings,
+      messages: tickerSettings.messages.map((m) => ({ ...m, published: false })),
+    };
+
+    saveTickerSettingsToDb(tickerDrafts);
+    toast.success("Comunicados guardados. La marquesina queda como borrador hasta pulsar Publicar aviso.");
   }
 
   const preview = selectedManual ?? templateToManual(settings.automatic.birthday, "Cumpleaños");
+  function appendEndIconString(current: string | undefined, emoji: string) {
+    return [String(current || "").trim(), emoji].filter(Boolean).join(" ").trim();
+  }
+
+  function removeEndIconAtIndex(current: string | undefined, index: number) {
+    const list = iconList(current);
+    list.splice(index, 1);
+    return list.join(" ");
+  }
+
+  function renderEndIconPills(current: string | undefined, onRemove: (index: number) => void) {
+    const list = iconList(current);
+
+    if (!list.length) {
+      return (
+        <div className="rounded-xl border border-dashed border-slate-300 bg-slate-50 px-3 py-2 text-xs font-semibold text-slate-500">
+          Sin iconos finales seleccionados.
+        </div>
+      );
+    }
+
+    return (
+      <div className="flex flex-wrap gap-1.5">
+        {list.map((emoji, index) => (
+          <button
+            key={`end-${emoji}-${index}`}
+            type="button"
+            onClick={() => onRemove(index)}
+            className="inline-flex items-center gap-1 rounded-full border border-slate-200 bg-white px-2.5 py-1 text-sm font-bold shadow-sm transition hover:border-red-300 hover:bg-red-50"
+            title="Quitar este icono final"
+          >
+            <span>{emoji}</span>
+            <span className="text-xs text-slate-500">×</span>
+          </button>
+        ))}
+      </div>
+    );
+  }
+
+  function renderEndIconQuickPicker(message: CompanyTickerMessage) {
+    const quickEndIcons = EMOJI_CATEGORIES.find((c) => c.name === "Avisos")?.emojis.concat([
+      "✅", "☑️", "✔️", "👌", "👍", "👏", "💪", "🙏", "🤝", "⭐",
+      "🌟", "✨", "📌", "📣", "🔔", "⚓", "🛟", "🚤", "🏖️", "🌊",
+      "☀️", "🎉", "🎁", "🥳", "🚨", "⚠️", "⏰", "📅", "🏢", "💙"
+    ]) || [];
+
+    return (
+      <div className="rounded-2xl border border-slate-200 bg-white p-3 shadow-sm">
+        <div className="mb-2 text-xs font-black uppercase tracking-wide text-slate-600">
+          Iconos finales seleccionados
+        </div>
+
+        <div className="mb-3">
+          {renderEndIconPills((message as any).endIcon || "", (index) =>
+            updateTicker(message.id, {
+              endIcon: removeEndIconAtIndex((message as any).endIcon || "", index),
+            } as any)
+          )}
+        </div>
+
+        <div className="mb-2 flex items-center justify-between gap-2">
+          <div className="text-xs font-black uppercase tracking-wide text-slate-600">
+            Emojis rápidos para cerrar el aviso
+          </div>
+
+          <button
+            type="button"
+            className="rounded-lg border border-red-200 bg-red-50 px-3 py-1.5 text-xs font-black text-red-700 hover:bg-red-100"
+            onClick={() => updateTicker(message.id, { endIcon: "" } as any)}
+          >
+            Limpiar finales
+          </button>
+        </div>
+
+        <div className="flex flex-wrap gap-1.5">
+          {quickEndIcons.map((emoji, index) => (
+            <button
+              key={`end-quick-${emoji}-${index}`}
+              type="button"
+              onClick={() =>
+                updateTicker(message.id, {
+                  endIcon: appendEndIconString((message as any).endIcon || "", emoji),
+                } as any)
+              }
+              className="rounded-xl border border-slate-200 bg-slate-50 px-2.5 py-2 text-xl transition hover:border-sky-300 hover:bg-sky-50 active:scale-95"
+              title="Agregar icono final"
+            >
+              {emoji}
+            </button>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
 
   function renderEmojiPicker(target: "manual" | "birthday" | "saint") {
     const current = target === "manual" ? (selectedManual?.style.icon || "") : target === "birthday" ? (settings.automatic.birthday.icon || settings.automatic.birthday.style.icon || "") : (settings.automatic.saint.icon || settings.automatic.saint.style.icon || "");
@@ -343,12 +503,12 @@ function CheckinMessagesAdmin() {
       if (target === "birthday") updateAuto("birthday", { icon: next, style: { ...settings.automatic.birthday.style, icon: next } });
       if (target === "saint") updateAuto("saint", { icon: next, style: { ...settings.automatic.saint.style, icon: next } });
     };
-    const toggleIcon = (emoji: string) => applyIcons(toggleIconString(current, emoji));
+    const toggleIcon = (emoji: string) => applyIcons(appendIconString(current, emoji));
     return (
       <div className="rounded-2xl border border-sky-100 bg-white p-3">
         <div className="mb-3 rounded-2xl border border-sky-100 bg-sky-50/70 p-2">
           <div className="mb-1 text-[11px] font-black uppercase tracking-wide text-sky-900">Iconos seleccionados</div>
-          {selectedIconPills(current, (emoji) => applyIcons(toggleIconString(current, emoji)))}
+          {selectedIconPills(current, (_emoji, index) => applyIcons(removeIconAtIndex(current, index)))}
         </div>
         <div className="mb-2 flex flex-wrap gap-1.5">
           {EMOJI_CATEGORIES.map((cat) => (
@@ -409,7 +569,7 @@ function CheckinMessagesAdmin() {
     }
     return (
       <div className="rounded-2xl border border-emerald-100 bg-emerald-50 px-3 py-2 text-xs font-semibold text-emerald-900 md:col-span-2">
-        Se mostrará a todos los trabajadores dentro del rango de fechas.
+        Destino: todos. Visible solo si está publicado y dentro del rango de fechas.
       </div>
     );
   }
@@ -448,7 +608,7 @@ function CheckinMessagesAdmin() {
         </label>
       );
     }
-    return <div className="rounded-2xl border border-sky-100 bg-sky-50 px-3 py-2 text-xs font-semibold text-sky-900 md:col-span-2">Se mostrará a todos dentro del rango de fechas.</div>;
+    return null;
   }
 
   return (
@@ -495,75 +655,166 @@ function CheckinMessagesAdmin() {
 
               <div className="grid gap-2 md:grid-cols-3">
                 <label className="text-xs font-black text-slate-600">Iconos seleccionados<input className="mt-1 w-full rounded-xl border px-3 py-2 text-sm" value={selectedTicker.icon} onChange={(e) => updateTicker(selectedTicker.id, { icon: e.target.value })} />
-                  <div className="mt-2">{selectedIconPills(selectedTicker.icon, (emoji) => updateTicker(selectedTicker.id, { icon: toggleIconString(selectedTicker.icon, emoji) }))}</div>
+                  <div className="mt-2">{selectedIconPills(selectedTicker.icon, (_emoji, index) => updateTicker(selectedTicker.id, { icon: removeIconAtIndex(selectedTicker.icon, index) }))}</div>
                 </label>
-                <label className="text-xs font-black text-slate-600 md:col-span-2">Título<input className="mt-1 w-full rounded-xl border px-3 py-2 text-sm" value={selectedTicker.title} onChange={(e) => updateTicker(selectedTicker.id, { title: e.target.value })} /></label>
+                <label className="text-xs font-black text-slate-600">Etiqueta visible<input className="mt-1 w-full rounded-xl border px-3 py-2 text-sm" value={(selectedTicker as any).badge || ""} placeholder="Ej. RRHH, Urgente, Aviso" onChange={(e) => updateTicker(selectedTicker.id, { badge: e.target.value } as any)} /></label>
+                <label className="text-xs font-black text-slate-600">Título<input className="mt-1 w-full rounded-xl border px-3 py-2 text-sm" value={selectedTicker.title} onChange={(e) => updateTicker(selectedTicker.id, { title: e.target.value })} /></label>
               </div>
 
               <div className="rounded-2xl border border-slate-200 bg-white p-3">
-                <div className="mb-2 text-xs font-black uppercase tracking-wide text-slate-500">Emojis rápidos para comunicados · puedes seleccionar varios</div>
+                <div className="mb-2 flex items-center justify-between gap-3">
+                  <div className="text-xs font-black uppercase tracking-wide text-slate-500">Emojis rápidos para comunicados · puedes seleccionar varios</div>
+                  <button type="button" onClick={() => updateTicker(selectedTicker.id, { icon: "" })} className="rounded-lg border border-red-200 bg-red-50 px-3 py-1.5 text-xs font-black text-red-700 hover:bg-red-100">
+                    Limpiar inicio
+                  </button>
+                </div>
                 <div className="flex flex-wrap gap-1.5">
-                  {EMOJI_CATEGORIES.find((c) => c.name === "Avisos")?.emojis.concat(["🎄", "🎅", "🏖️", "🕙", "🍽️", "🚌", "🚨", "📣", "🏢", "🧑‍💼"]).map((emoji) => (
-                    <button key={emoji} type="button" onClick={() => updateTicker(selectedTicker.id, { icon: toggleIconString(selectedTicker.icon, emoji) })} className={`rounded-xl border px-2.5 py-2 text-xl transition ${iconList(selectedTicker.icon).includes(emoji) ? "border-sky-400 bg-sky-100 ring-2 ring-sky-100" : "border-slate-200 bg-slate-50 hover:border-sky-300 hover:bg-sky-50"}`}>{emoji}</button>
+                  {EMOJI_CATEGORIES.find((c) => c.name === "Avisos")?.emojis.concat(["🎄", "🎅", "🏖️", "🕙", "🍽️", "🚌", "🚨", "📣", "🏢", "🧑‍💼", "😊", "😁", "😃", "🙂", "🙌", "👏", "💪", "❤️", "💙", "⭐", "🎉", "🎂", "🎁", "🥳", "🌟", "✨", "💡", "🙏", "🤝", "👋", "⚓", "🛟", "🚤", "🧯", "📍", "📢", "🗓️", "⏰", "🧾", "💶", "🔐", "🛠️"]).map((emoji) => (
+                    <button key={emoji} type="button" onClick={() => updateTicker(selectedTicker.id, { icon: appendIconString(selectedTicker.icon, emoji) })} className={`rounded-xl border px-2.5 py-2 text-xl transition ${iconList(selectedTicker.icon).includes(emoji) ? "border-sky-400 bg-sky-100 ring-2 ring-sky-100" : "border-slate-200 bg-slate-50 hover:border-sky-300 hover:bg-sky-50"}`}>{emoji}</button>
                   ))}
                 </div>
               </div>
 
-              <label className="text-xs font-black text-slate-600">Texto del comunicado<textarea className="mt-1 min-h-20 w-full rounded-xl border px-3 py-2 text-sm" value={selectedTicker.body} onChange={(e) => updateTicker(selectedTicker.id, { body: e.target.value })} /></label>
+              {renderEndIconQuickPicker(selectedTicker)}
 
-              <div className="rounded-2xl border border-sky-200 bg-white p-3">
-                <div className="mb-2 flex items-center justify-between gap-2">
+              <div className="rounded-2xl border border-sky-200 bg-white p-4 shadow-sm">
+                <div className="mb-3 flex items-center justify-between gap-3">
                   <div>
                     <div className="text-sm font-black text-slate-950">Preview privado</div>
-                    <div className="text-xs text-slate-500">Así se verá antes de publicarlo. Este preview no aparece a los trabajadores.</div>
+                    <div className="text-[11px] font-semibold text-slate-500">Así se verá la marquesina antes de publicarla.</div>
                   </div>
                   <span className="rounded-full border border-sky-200 bg-sky-50 px-3 py-1 text-[11px] font-black text-sky-900">Vista previa</span>
                 </div>
-                <div className="overflow-hidden rounded-2xl border px-3 py-2" style={{ background: selectedTicker.background, borderColor: selectedTicker.border, color: selectedTicker.text, fontFamily: selectedTicker.fontFamily }}>
-                  <div className="flex items-center gap-3">
-                    <div className="rounded-xl px-2 py-1 text-xs font-black text-white" style={{ background: selectedTicker.accent }}>Comunicado</div>
-                    <div className="truncate text-sm font-semibold">{selectedTicker.icon} {selectedTicker.title}: {selectedTicker.body}</div>
+
+                <div className="overflow-hidden rounded-2xl border px-4 py-3 whitespace-nowrap shadow-inner" style={{
+                    background: selectedTicker.background,
+                    borderColor: selectedTicker.border,
+                    fontFamily: selectedTicker.fontFamily,
+                  }}>
+                  <div className="flex min-h-10 items-center gap-3">
+                    <div className="rounded-full px-3 py-1 text-[11px] font-black text-white shadow-sm" style={{ background: selectedTicker.accent }}>{(selectedTicker as any).badge || "Aviso"}</div>
+                    <div
+                      className="whitespace-nowrap text-sm ticker-preview-text-style"
+                      style={{
+                        color: selectedTicker.text,
+                        fontWeight: (selectedTicker as any).fontWeight || "700",
+                        fontStyle: (selectedTicker as any).fontStyle || "normal",
+                        textDecoration: (selectedTicker as any).textDecoration || "none",
+                        display: "inline-block",
+                        minWidth: "max-content",
+                        paddingRight: "4rem",
+                        animation:
+                          selectedTicker.speed === "static"
+                            ? "none"
+                            : `grupmarAdminTickerPreview ${selectedTicker.speed === "slow" ? 52 : selectedTicker.speed === "fast" ? 14 : 28}s linear infinite`,
+                      }}
+                    >
+                      {selectedTicker.icon} {selectedTicker.title}: {selectedTicker.body} {(selectedTicker as any).endIcon || ""}
+                    </div>
                   </div>
                 </div>
               </div>
 
-              <div className="grid gap-2 md:grid-cols-3">
-                <label className="flex items-center gap-2 text-xs font-black text-slate-600"><input type="checkbox" checked={selectedTicker.enabled} onChange={(e) => updateTicker(selectedTicker.id, { enabled: e.target.checked })} /> Aviso habilitado</label>
-                <label className="text-xs font-black text-slate-600">Velocidad<select className="mt-1 w-full rounded-xl border px-3 py-2 text-sm" value={selectedTicker.speed} onChange={(e) => updateTicker(selectedTicker.id, { speed: e.target.value as any })}><option value="slow">Lenta</option><option value="normal">Normal</option><option value="fast">Rápida</option><option value="static">Fija sin movimiento</option></select></label>
-                <label className="text-xs font-black text-slate-600">Fuente<select className="mt-1 w-full rounded-xl border px-3 py-2 text-sm" value={selectedTicker.fontFamily} onChange={(e) => updateTicker(selectedTicker.id, { fontFamily: e.target.value })}>{FONT_OPTIONS.map((f) => <option key={f}>{f}</option>)}</select></label>
-              </div>
+              <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+                <div className="mb-3 text-sm font-black text-slate-950">Formato</div>
+                <div className="grid gap-3 xl:grid-cols-[180px_170px_280px_150px] xl:items-end">
+                  <label className="flex h-11 items-center gap-2 rounded-xl border border-slate-200 bg-slate-50 px-3 text-[12px] font-black text-slate-700">
+                    <input type="checkbox" checked={selectedTicker.enabled} onChange={(e) => updateTicker(selectedTicker.id, { enabled: e.target.checked })} />
+                    Aviso habilitado
+                  </label>
 
-              <div className="grid gap-2 md:grid-cols-3">
-                <label className="text-xs font-black text-slate-600">Dirigido a<select className="mt-1 w-full rounded-xl border px-3 py-2 text-sm" value={selectedTicker.targetMode} onChange={(e) => updateTicker(selectedTicker.id, { targetMode: e.target.value as any, targetValue: "" })}><option value="all">Todos</option><option value="employee">Trabajador registrado</option><option value="center">Centro registrado</option><option value="department">Departamento registrado</option></select></label>
-                {tickerTargetValueControl(selectedTicker)}
-              </div>
+                  <label className="text-[11px] font-black text-slate-600">
+                    Velocidad
+                    <select className="mt-1 h-10 w-full rounded-xl border border-slate-200 bg-white px-3 text-[12px] font-semibold" value={selectedTicker.speed} onChange={(e) => updateTicker(selectedTicker.id, { speed: e.target.value as any })}>
+                      <option value="slow">Lenta</option>
+                      <option value="normal">Normal</option>
+                      <option value="fast">Rápida</option>
+                      <option value="static">Fija sin movimiento</option>
+                    </select>
+                  </label>
 
-              <div className="rounded-2xl border border-slate-200 bg-white p-3">
-                <div className="mb-2 text-sm font-black text-slate-950">Publicación</div>
-                <div className="grid gap-2 md:grid-cols-3">
-                  <label className="text-xs font-black text-slate-600">Duración<select className="mt-1 w-full rounded-xl border px-3 py-2 text-sm" value={selectedTicker.publishMode} onChange={(e) => updateTicker(selectedTicker.id, { publishMode: e.target.value as any })}><option value="default24h">Por defecto: 24 horas</option><option value="custom">Desde / hasta fechas</option></select></label>
-                  {selectedTicker.publishMode === "custom" ? (
-                    <>
-                      <label className="text-xs font-black text-slate-600">Desde<input type="date" className="mt-1 w-full rounded-xl border px-3 py-2 text-sm" value={selectedTicker.startDate} onChange={(e) => updateTicker(selectedTicker.id, { startDate: e.target.value })} /></label>
-                      <label className="text-xs font-black text-slate-600">Hasta<input type="date" className="mt-1 w-full rounded-xl border px-3 py-2 text-sm" value={selectedTicker.endDate} onChange={(e) => updateTicker(selectedTicker.id, { endDate: e.target.value })} /></label>
-                    </>
-                  ) : (
-                    <div className="rounded-2xl border border-emerald-100 bg-emerald-50 px-3 py-2 text-xs font-semibold text-emerald-900 md:col-span-2">
-                      Al publicar, se mostrará durante 24 horas y luego desaparecerá automáticamente de la marquesina.
+                  <label className="text-[11px] font-black text-slate-600">
+                    Fuente
+                    <select className="mt-1 h-10 w-full rounded-xl border border-slate-200 bg-white px-3 text-[12px] font-semibold" value={selectedTicker.fontFamily} onChange={(e) => updateTicker(selectedTicker.id, { fontFamily: e.target.value })}>
+                      {FONT_OPTIONS.map((f) => <option key={f}>{f}</option>)}
+                    </select>
+                  </label>
+
+                  <div>
+                    <div className="mb-1 text-[11px] font-black text-slate-600">Estilo</div>
+                    <div className="grid grid-cols-3 gap-2">
+                      <button type="button" onClick={() => updateTicker(selectedTicker.id, { fontWeight: ((selectedTicker as any).fontWeight || "700") === "700" ? "400" : "700" } as any)} className={`h-10 rounded-xl border px-3 text-[12px] font-black transition ${((selectedTicker as any).fontWeight || "700") === "700" ? "border-sky-300 bg-sky-100 text-sky-900" : "border-slate-200 bg-white text-slate-600"}`}>B</button>
+                      <button type="button" onClick={() => updateTicker(selectedTicker.id, { fontStyle: ((selectedTicker as any).fontStyle || "normal") === "italic" ? "normal" : "italic" } as any)} className={`h-10 rounded-xl border px-3 text-[12px] italic font-black transition ${((selectedTicker as any).fontStyle || "normal") === "italic" ? "border-sky-300 bg-sky-100 text-sky-900" : "border-slate-200 bg-white text-slate-600"}`}>I</button>
+                      <button type="button" onClick={() => updateTicker(selectedTicker.id, { textDecoration: ((selectedTicker as any).textDecoration || "none") === "underline" ? "none" : "underline" } as any)} className={`h-10 rounded-xl border px-3 text-[12px] underline font-black transition ${((selectedTicker as any).textDecoration || "none") === "underline" ? "border-sky-300 bg-sky-100 text-sky-900" : "border-slate-200 bg-white text-slate-600"}`}>U</button>
                     </div>
-                  )}
+                  </div>
                 </div>
               </div>
 
-              <div className="grid gap-2 md:grid-cols-5">
-                <label className="text-xs font-black text-slate-600">Fondo<input type="color" className="mt-1 h-10 w-full rounded-xl border" value={selectedTicker.background} onChange={(e) => updateTicker(selectedTicker.id, { background: e.target.value })} /></label>
-                <label className="text-xs font-black text-slate-600">Borde<input type="color" className="mt-1 h-10 w-full rounded-xl border" value={selectedTicker.border} onChange={(e) => updateTicker(selectedTicker.id, { border: e.target.value })} /></label>
-                <label className="text-xs font-black text-slate-600">Texto<input type="color" className="mt-1 h-10 w-full rounded-xl border" value={selectedTicker.text} onChange={(e) => updateTicker(selectedTicker.id, { text: e.target.value })} /></label>
-                <label className="text-xs font-black text-slate-600">Etiqueta<input type="color" className="mt-1 h-10 w-full rounded-xl border" value={selectedTicker.accent} onChange={(e) => updateTicker(selectedTicker.id, { accent: e.target.value })} /></label>
-                <label className="text-xs font-black text-slate-600">Paleta<select className="mt-1 w-full rounded-xl border px-3 py-2 text-sm" defaultValue="" onChange={(e) => { const p = PALETTE_OPTIONS.find((p) => p.name === e.target.value); if (p) updateTicker(selectedTicker.id, { background: p.background, border: p.border, text: p.text, accent: p.accent }); }}><option value="">Aplicar…</option>{PALETTE_OPTIONS.map((p) => <option key={p.name}>{p.name}</option>)}</select></label>
+              <label className="block rounded-2xl border border-slate-200 bg-white p-4 text-sm font-black text-slate-700 shadow-sm">
+                Texto del comunicado
+                <textarea className="mt-2 min-h-24 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold leading-relaxed text-slate-800 outline-none transition focus:border-sky-300 focus:bg-white focus:ring-4 focus:ring-sky-100" value={selectedTicker.body} onChange={(e) => updateTicker(selectedTicker.id, { body: e.target.value })} />
+              </label>
+
+              <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+                <div className="mb-3 text-sm font-black text-slate-950">Publicación</div>
+                <div className="grid gap-3 xl:grid-cols-4">
+                  <label className="text-[11px] font-black text-slate-600">
+                    Dirigido a
+                    <select className="mt-1 h-10 w-full rounded-xl border border-slate-200 bg-white px-3 text-[12px] font-semibold" value={selectedTicker.targetMode} onChange={(e) => updateTicker(selectedTicker.id, { targetMode: e.target.value as any, targetValue: "" })}>
+                      <option value="all">Todos</option>
+                      <option value="employee">Trabajador registrado</option>
+                      <option value="center">Centro registrado</option>
+                      <option value="department">Departamento registrado</option>
+                    </select>
+                  </label>
+
+                  <label className="text-[11px] font-black text-slate-600">
+                    Duración
+                    <select className="mt-1 h-10 w-full rounded-xl border border-slate-200 bg-white px-3 text-[12px] font-semibold" value={selectedTicker.publishMode} onChange={(e) => updateTicker(selectedTicker.id, { publishMode: e.target.value as any })}>
+                      <option value="default24h">24 horas</option>
+                      <option value="custom">Desde / hasta fechas</option>
+                    </select>
+                  </label>
+
+                  {selectedTicker.publishMode === "custom" ? (
+                    <>
+                      <label className="text-[11px] font-black text-slate-600">
+                        Desde
+                        <input type="date" className="mt-1 h-10 w-full rounded-xl border border-slate-200 bg-white px-3 text-[12px] font-semibold" value={selectedTicker.startDate} onChange={(e) => updateTicker(selectedTicker.id, { startDate: e.target.value })} />
+                      </label>
+
+                      <label className="text-[11px] font-black text-slate-600">
+                        Hasta
+                        <input type="date" className="mt-1 h-10 w-full rounded-xl border border-slate-200 bg-white px-3 text-[12px] font-semibold" value={selectedTicker.endDate} onChange={(e) => updateTicker(selectedTicker.id, { endDate: e.target.value })} />
+                      </label>
+                    </>
+                  ) : (
+                    <div className="xl:col-span-2 flex items-end">
+                      <div className="flex h-10 w-full items-center rounded-xl border border-emerald-100 bg-emerald-50 px-4 text-[12px] font-semibold text-emerald-800">
+                        Se ocultará automáticamente al cumplir 24 horas.
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {selectedTicker.targetMode !== "all" && (
+                  <div className="mt-3">
+                    {tickerTargetValueControl(selectedTicker)}
+                  </div>
+                )}
               </div>
 
-              <div className="flex flex-wrap items-center justify-between gap-2">
+              <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+                <div className="mb-3 text-sm font-black text-slate-950">Diseño visual</div>
+                <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-[1fr_1fr_1fr_1fr_230px]">
+                  <label className="rounded-xl border border-slate-200 bg-slate-50 p-3 text-[11px] font-black text-slate-600">Fondo<input type="color" className="mt-2 h-10 w-full cursor-pointer rounded-xl border border-slate-200 bg-white p-1" value={selectedTicker.background} onChange={(e) => updateTicker(selectedTicker.id, { background: e.target.value })} /></label>
+                  <label className="rounded-xl border border-slate-200 bg-slate-50 p-3 text-[11px] font-black text-slate-600">Borde<input type="color" className="mt-2 h-10 w-full cursor-pointer rounded-xl border border-slate-200 bg-white p-1" value={selectedTicker.border} onChange={(e) => updateTicker(selectedTicker.id, { border: e.target.value })} /></label>
+                  <label className="rounded-xl border border-slate-200 bg-slate-50 p-3 text-[11px] font-black text-slate-600">Texto<input type="color" className="mt-2 h-10 w-full cursor-pointer rounded-xl border border-slate-200 bg-white p-1" value={selectedTicker.text} onChange={(e) => updateTicker(selectedTicker.id, { text: e.target.value })} /></label>
+                  <label className="rounded-xl border border-slate-200 bg-slate-50 p-3 text-[11px] font-black text-slate-600">Etiqueta<input type="color" className="mt-2 h-10 w-full cursor-pointer rounded-xl border border-slate-200 bg-white p-1" value={selectedTicker.accent} onChange={(e) => updateTicker(selectedTicker.id, { accent: e.target.value })} /></label>
+                  <label className="rounded-xl border border-slate-200 bg-slate-50 p-3 text-[11px] font-black text-slate-600">Paleta<select className="mt-2 h-10 w-full rounded-xl border border-slate-200 bg-white px-3 text-[12px] font-semibold" defaultValue="" onChange={(e) => { const p = PALETTE_OPTIONS.find((p) => p.name === e.target.value); if (p) updateTicker(selectedTicker.id, { background: p.background, border: p.border, text: p.text, accent: p.accent }); }}><option value="">Aplicar…</option>{PALETTE_OPTIONS.map((p) => <option key={p.name}>{p.name}</option>)}</select></label>
+                </div>
+              </div>              <div className="flex flex-wrap items-center justify-between gap-2">
                 <Button variant="outline" className="rounded-xl bg-white" onClick={() => deleteTicker(selectedTicker.id)}>Eliminar aviso</Button>
                 <div className="flex flex-wrap gap-2">
                   {selectedTicker.published && <Button variant="outline" className="rounded-xl bg-white text-rose-700" onClick={() => unpublishTicker(selectedTicker)}>Retirar publicación</Button>}
@@ -720,4 +971,10 @@ function CheckinMessagesAdmin() {
     </div>
   );
 }
+
+
+
+
+
+
 

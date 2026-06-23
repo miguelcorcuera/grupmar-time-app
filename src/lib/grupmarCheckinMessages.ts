@@ -9,6 +9,9 @@ export type CheckinMessageStyle = {
   text: string;
   accent: string;
   fontFamily: string;
+  fontWeight?: string;
+  fontStyle?: string;
+  textDecoration?: string;
   titleSize: number;
   bodySize: number;
   bold: boolean;
@@ -70,6 +73,8 @@ export type CompanyTickerMessage = {
   publishedAt: string;
   publishMode: CompanyTickerPublishMode;
   icon: string;
+  endIcon?: string;
+  badge?: string;
   title: string;
   body: string;
   targetMode: CheckinTargetMode;
@@ -112,14 +117,79 @@ export const EMOJI_CATEGORIES = [
 ];
 
 export const EMOJI_OPTIONS = EMOJI_CATEGORIES.flatMap((category) => category.emojis);
-export const FONT_OPTIONS = ["Arial", "Calibri", "Inter", "Verdana", "Georgia", "Trebuchet MS"];
+export const FONT_OPTIONS = [
+  "Arial",
+  "Arial Black",
+  "Verdana",
+  "Tahoma",
+  "Trebuchet MS",
+  "Segoe UI",
+  "Calibri",
+  "Cambria",
+  "Georgia",
+  "Times New Roman",
+  "Garamond",
+  "Palatino Linotype",
+  "Book Antiqua",
+  "Courier New",
+  "Lucida Console",
+  "Lucida Sans Unicode",
+  "Impact",
+  "Century Gothic",
+  "Franklin Gothic Medium",
+  "Gill Sans",
+  "Helvetica",
+  "Montserrat",
+  "Poppins",
+  "Roboto",
+  "Inter",
+  "Open Sans",
+  "Lato",
+  "Nunito",
+  "Merriweather",
+  "Playfair Display",
+  "Bebas Neue",
+  "Oswald",
+  "Raleway",
+  "Ubuntu",
+  "Rubik",
+  "Work Sans",
+  "Source Sans Pro",
+  "Noto Sans",
+  "Quicksand",
+  "Josefin Sans",
+  "DM Sans",
+  "Fira Sans",
+  "PT Sans",
+  "Aptos",
+  "Consolas",
+  "Candara",
+  "Corbel",
+  "Constantia",
+  "Perpetua",
+  "Rockwell"
+];
 export const PALETTE_OPTIONS = [
-  { name: "Cumpleaños suave", background: "#FFF8D8", border: "#F4D06F", text: "#0F172A", accent: "#F59E0B" },
-  { name: "Celeste corporativo", background: "#EAF6FF", border: "#93C5FD", text: "#0F172A", accent: "#2563EB" },
-  { name: "Verde reconocimiento", background: "#ECFDF3", border: "#86EFAC", text: "#0F172A", accent: "#16A34A" },
-  { name: "Violeta logro", background: "#F5F3FF", border: "#C4B5FD", text: "#111827", accent: "#7C3AED" },
-  { name: "Rosa celebración", background: "#FFF1F2", border: "#FDA4AF", text: "#111827", accent: "#E11D48" },
-  { name: "Neutro elegante", background: "#F8FAFC", border: "#CBD5E1", text: "#0F172A", accent: "#334155" },
+  { name: "Neutro elegante", background: "#F8FAFC", border: "#CBD5E1", text: "#0F172A", accent: "#0EA5E9" },
+  { name: "Blanco limpio", background: "#FFFFFF", border: "#E2E8F0", text: "#0F172A", accent: "#0EA5E9" },
+  { name: "Corporativo azul", background: "#EAF6FF", border: "#38BDF8", text: "#0F172A", accent: "#0284C7" },
+  { name: "Azul noche premium", background: "#0F172A", border: "#38BDF8", text: "#F8FAFC", accent: "#0EA5E9" },
+  { name: "Marino Grupo", background: "#E0F2FE", border: "#0369A1", text: "#082F49", accent: "#075985" },
+  { name: "Cian tecnológico", background: "#ECFEFF", border: "#06B6D4", text: "#164E63", accent: "#0891B2" },
+  { name: "Minimal cielo", background: "#F0F9FF", border: "#BAE6FD", text: "#0C4A6E", accent: "#0EA5E9" },
+  { name: "Rojo urgente", background: "#FEF2F2", border: "#EF4444", text: "#7F1D1D", accent: "#DC2626" },
+  { name: "Rojo alerta total", background: "#DC2626", border: "#991B1B", text: "#FFFFFF", accent: "#111827" },
+  { name: "Ámbar importante", background: "#FFFBEB", border: "#F59E0B", text: "#78350F", accent: "#D97706" },
+  { name: "Verde operativo", background: "#ECFDF3", border: "#22C55E", text: "#052E16", accent: "#16A34A" },
+  { name: "Éxito suave", background: "#F0FDF4", border: "#86EFAC", text: "#14532D", accent: "#22C55E" },
+  { name: "Violeta dirección", background: "#F5F3FF", border: "#8B5CF6", text: "#2E1065", accent: "#7C3AED" },
+  { name: "Rosa comunicado", background: "#FFF1F2", border: "#FB7185", text: "#881337", accent: "#E11D48" },
+  { name: "Grafito serio", background: "#111827", border: "#6B7280", text: "#F9FAFB", accent: "#374151" },
+  { name: "San Juan", background: "#FFF7ED", border: "#FB923C", text: "#7C2D12", accent: "#EA580C" },
+  { name: "Festivo", background: "#FEFCE8", border: "#EAB308", text: "#713F12", accent: "#CA8A04" },
+  { name: "RRHH suave", background: "#FDF2F8", border: "#F472B6", text: "#831843", accent: "#DB2777" },
+  { name: "Operaciones", background: "#F1F5F9", border: "#64748B", text: "#0F172A", accent: "#334155" },
+  { name: "Seguridad", background: "#F8FAFC", border: "#0F172A", text: "#0F172A", accent: "#111827" }
 ];
 
 export const DEFAULT_STYLE: CheckinMessageStyle = {
@@ -129,6 +199,9 @@ export const DEFAULT_STYLE: CheckinMessageStyle = {
   text: "#0F172A",
   accent: "#F59E0B",
   fontFamily: "Arial",
+    fontWeight: "700",
+    fontStyle: "normal",
+    textDecoration: "none",
   titleSize: 26,
   bodySize: 14,
   bold: true,
@@ -369,16 +442,18 @@ export function newCompanyTickerMessage(): CompanyTickerMessage {
     publishedAt: "",
     publishMode: "default24h",
     icon: "📢",
+    endIcon: "",
+    badge: "Aviso",
     title: "Comunicado RRHH",
     body: "Escribe aquí el comunicado oficial que aparecerá en la marquesina superior.",
     targetMode: "all",
     targetValue: "",
     startDate: new Date().toISOString().slice(0, 10),
     endDate: new Date(Date.now() + 7 * 86400000).toISOString().slice(0, 10),
-    background: "#EAF6FF",
-    border: "#93C5FD",
+    background: "#F8FAFC",
+    border: "#BAE6FD",
     text: "#0F172A",
-    accent: "#2563EB",
+    accent: "#0EA5E9",
     fontFamily: "Arial",
     speed: "normal",
   };
