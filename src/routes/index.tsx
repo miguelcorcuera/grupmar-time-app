@@ -36,7 +36,7 @@ import { toast } from "sonner";
 import { AccessMap, ACCESS_SECURITY_VERSION, captureAccessSnapshot, riskClasses, riskLabel, RiskIcon, type AccessSnapshot } from "@/lib/accessSecurity";
 import { getNameDayForProfile, getTodayCelebrations, getUpcomingBirthdays, isBirthdayPerson, readCelebrationConfig, prettyMMDD, fetchTodayCelebrations } from "@/lib/grupmarCelebrations";
 import { buildCheckinCards, buildCompanyTickerItems, readCheckinMessageSettings, readCompanyTickerSettings } from "@/lib/grupmarCheckinMessages";
-import { getPublishedInternalNewsFromItems, loadPublicInternalNews } from "@/lib/grupmarInternalNews";
+import { getPublishedInternalNewsFromItems, loadMyReadNewsIds, loadPublicInternalNews } from "@/lib/grupmarInternalNews";
 import { applySavedUserTheme } from "@/lib/grupmarUserTheme";
 
 export const Route = createFileRoute("/")({
@@ -129,7 +129,7 @@ type ModuleId = "celebrations" | "news" | "schedule" | "summary" | "security" | 
 
 const MODULE_ORDER_KEY = "grupmar_time_home_module_order_v1";
 const VISIBLE_MODULES_KEY = "grupmar_time_home_visible_modules_v1";
-const DEFAULT_MODULE_ORDER: ModuleId[] = ["celebrations", "news", "schedule", "summary", "security", "actions", "alerts", "balance", "events"];
+const DEFAULT_MODULE_ORDER: ModuleId[] = ["celebrations", "schedule", "summary", "security", "actions", "alerts", "balance", "events"];
 
 const MODULE_LABELS: Record<ModuleId, string> = {
   celebrations: "Cumpleaños / santos",
@@ -435,6 +435,7 @@ function Home() {
   }, []);
 
   const { profile, role, loading: pLoading } = useProfile(userId);
+  const [homePermissions, setHomePermissions] = useState<Record<string, boolean>>({});
 
   // v15.3: si Supabase autentica pero el perfil falla, no dejamos la pantalla girando para siempre.
   useEffect(() => {
@@ -505,6 +506,7 @@ function Home() {
   const companyTickerSettings = useMemo(() => readCompanyTickerSettings(), []);
   const companyTickerItems = useMemo(() => buildCompanyTickerItems(profile, companyTickerSettings), [profile, companyTickerSettings]);
   const [newsRows, setNewsRows] = useState<InternalNewsItem[]>([]);
+  const [readNewsIds, setReadNewsIds] = useState<string[]>([]); // HOME_NEWS_READS_CANONICAL_V1
 
   useEffect(() => {
     let alive = true;
@@ -523,7 +525,107 @@ function Home() {
     };
   }, []);
 
+  // HOME_NEWS_READS_CANONICAL_V1
+  useEffect(() => {
+    let alive = true;
+    const profileId = profile?.id ? String(profile.id) : "";
+
+    async function refreshReadNewsIds() {
+      if (!profileId) {
+        if (alive) setReadNewsIds([]);
+        return;
+      }
+
+      try {
+        const ids = await loadMyReadNewsIds(profileId);
+        if (alive) setReadNewsIds(ids);
+      } catch (err) {
+        console.error("No se pudieron cargar las lecturas de noticias.", err);
+        if (alive) setReadNewsIds([]);
+      }
+    }
+
+    void refreshReadNewsIds();
+
+    const onFocus = () => { void refreshReadNewsIds(); };
+    const onVisibility = () => {
+      if (document.visibilityState === "visible") void refreshReadNewsIds();
+    };
+
+    window.addEventListener("focus", onFocus);
+    document.addEventListener("visibilitychange", onVisibility);
+
+    return () => {
+      alive = false;
+      window.removeEventListener("focus", onFocus);
+      document.removeEventListener("visibilitychange", onVisibility);
+    };
+  }, [profile?.id]);
+
   const internalNews = useMemo(() => getPublishedInternalNewsFromItems(newsRows, profile).slice(0, 6), [newsRows, profile, nowTick]);
+
+  // HOME_TOP_BUTTONS_ACCESS_PROFILE_V58
+  useEffect(() => {
+    let alive = true;
+
+    async function loadTopButtonPermissions() {
+      if (!userId) {
+        if (alive) setHomePermissions({});
+        return;
+      }
+
+      const { data: profileAccess, error: profileAccessError } = await (supabase as any)
+        .from("profiles")
+        .select("access_profile_id,email")
+        .eq("user_id", userId)
+        .maybeSingle();
+
+      if (profileAccessError) {
+        console.warn("home top buttons profile error", profileAccessError.message);
+        if (alive) setHomePermissions({});
+        return;
+      }
+
+      const accessProfileId = (profileAccess as any)?.access_profile_id || (profile as any)?.access_profile_id;
+      if (!accessProfileId) {
+        if (alive) setHomePermissions({});
+        return;
+      }
+
+      const { data, error } = await (supabase as any)
+        .from("access_profiles")
+        .select("module_permissions")
+        .eq("id", accessProfileId)
+        .maybeSingle();
+
+      if (error) {
+        console.warn("home top buttons access profile error", error.message);
+        if (alive) setHomePermissions({});
+        return;
+      }
+
+      const raw = (data as any)?.module_permissions;
+      const clean = raw && typeof raw === "object" && !Array.isArray(raw)
+        ? Object.fromEntries(Object.entries(raw).filter(([, value]) => value === true))
+        : {};
+
+      if (alive) setHomePermissions(clean as Record<string, boolean>);
+    }
+
+    loadTopButtonPermissions();
+
+    return () => {
+      alive = false;
+    };
+  }, [userId, (profile as any)?.access_profile_id]);
+
+  const readNewsIdSet = useMemo(() => new Set(readNewsIds.map(String)), [readNewsIds]);
+  const hasUnreadNews = internalNews.some((item) => item.id && !readNewsIdSet.has(String(item.id)));
+  const homeEmail = String((profile as any)?.email || "").toLowerCase();
+  const isSuperAdminHome = homeEmail === "ma.corcuera@grupomarport.com" || homeEmail.includes("miguel") || homeEmail.includes("admin");
+  const hasHomePermission = (permission: string) => homePermissions?.[permission] === true || isSuperAdminHome;
+  const canOpenShifts = hasHomePermission("admin.shifts");
+  const canOpenAdminPanel = Object.keys(homePermissions || {}).some((key) => key.startsWith("admin.") && homePermissions[key] === true) || isSuperAdminHome;
 
   useEffect(() => {
     saveUiThemeCookie(uiTheme);
@@ -1066,18 +1168,18 @@ function Home() {
             </a>
             <div className="flex items-center gap-2">
               <Button asChild variant="outline" size="sm">
-                <a href="/news">Noticias</a>
+                <a href="/news" className="relative inline-flex items-center gap-1">Noticias<span className="sr-only">HOME_NEWS_RED_DOT_V58</span>{hasUnreadNews ? <span className="absolute -right-1 -top-1 h-2.5 w-2.5 rounded-full bg-red-600 ring-2 ring-white" title="Hay noticias nuevas" /> : null}</a>
               </Button>
-              {role === "admin" && (
-                <>
-                  <Button asChild variant="outline" size="sm">
-                    <a href="/admin/shifts">Turnos</a>
-                  </Button>
-                  <Button asChild variant="outline" size="sm">
-                    <a href="/admin">Panel administrador</a>
-                  </Button>
-                </>
-              )}
+            {canOpenShifts ? (
+              <Button variant="outline" asChild>
+                <a href="/admin/shifts">Turnos</a>
+              </Button>
+            ) : null}
+            {canOpenAdminPanel ? (
+              <Button variant="outline" asChild>
+                <a href="/admin">Panel administrador</a>
+              </Button>
+            ) : null}
               <Button variant="ghost" size="sm" onClick={signOut}>
                 <LogOut className="w-4 h-4 mr-1" /> Salir
               </Button>
@@ -1116,7 +1218,7 @@ function Home() {
       </div>
 
       <main className="mx-auto flex max-w-6xl flex-col gap-5 px-4 py-8">
-        <Alert className={`rounded-3xl shadow-sm backdrop-blur ${uiTheme.mode === "dark" ? "border-slate-700 bg-slate-900/70 text-slate-200" : "border-slate-200 bg-white/75 text-slate-700"}`}>
+        <Alert hidden data-home-tech-banner-hidden="HOME_TECH_BANNER_HIDDEN_V56" className={`rounded-3xl shadow-sm backdrop-blur ${uiTheme.mode === "dark" ? "border-slate-700 bg-slate-900/70 text-slate-200" : "border-slate-200 bg-white/75 text-slate-700"}`}>
           <Sparkles className="w-4 h-4" />
           <AlertTitle>{PASTEL_HOME_VERSION}</AlertTitle>
           <AlertDescription>{ACCESS_SECURITY_VERSION}. Diseño pastel aplicado. El turno semanal asignado se muestra debajo del saludo y se adapta a móvil.</AlertDescription>

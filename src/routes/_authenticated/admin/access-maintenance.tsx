@@ -33,6 +33,7 @@ import { EditableUiText } from "@/components/EditableUiText";
 import { formatDateDDMMYYYY, toInputDate } from "@/lib/grupmarDate";
 import { useUserTableSettings } from "@/lib/userTableSettings";
 import { CelebrationsPage } from "@/components/admin/CelebrationsPanel";
+import { AccessProfilesMatrix } from "@/components/admin/AccessProfilesMatrix";
 
 export const Route = createFileRoute("/_authenticated/admin/access-maintenance")({
   component: AccessMaintenancePage,
@@ -46,6 +47,7 @@ type CatalogKey =
   | "document_types"
   | "job_positions"
   | "access_role_catalog"
+  | "access_profiles"
   | "celebrations"
   | "shifts";
 
@@ -66,6 +68,7 @@ const CATALOGS: Array<{ key: CatalogKey; label: string; description: string; tab
   { key: "job_positions", label: "Puestos", description: "Puestos laborales", table: "job_positions", group: "Estructura" },
   { key: "document_types", label: "Documentos", description: "Tipos de documento", table: "document_types", group: "Catálogos" },
   { key: "access_role_catalog", label: "Roles", description: "Roles disponibles para accesos", table: "access_role_catalog", group: "Catálogos" },
+  { key: "access_profiles", label: "Perfiles de acceso", description: "Matriz nodular de perfiles y checks por modulo.", table: "access_profiles", group: "Seguridad" },
   { key: "celebrations", label: "Celebraciones", description: "Festivos, feriados y santoral. Cumpleaños se editan desde Personal.", table: "company_holidays", group: "Catálogos" },
 ];
 
@@ -321,7 +324,8 @@ function AccessMaintenancePage() {
   const [documentTypes, setDocumentTypes] = useState<AnyRow[]>([]);
   const [roles, setRoles] = useState<AnyRow[]>([]);
 
-  const [editorOpen, setEditorOpen] = useState(false);
+    const [accessProfiles, setAccessProfiles] = useState<AnyRow[]>([]);
+const [editorOpen, setEditorOpen] = useState(false);
   const [importOpen, setImportOpen] = useState(false);
   const [editor, setEditor] = useState<AnyRow>(EMPTY_PERSONAL);
   const [passwordMode, setPasswordMode] = useState(false);
@@ -334,6 +338,7 @@ function AccessMaintenancePage() {
   const isPersonal = catalog === "personal";
   const isCompanies = catalog === "companies";
   const isRoles = catalog === "access_role_catalog";
+  const isAccessProfiles = catalog === "access_profiles";
   const isShifts = catalog === "shifts";
   const allColumns = getColumns(catalog);
   const tableKey = `maintenance.${catalog}`;
@@ -362,13 +367,15 @@ function AccessMaintenancePage() {
 
     const { data: r } = await (supabase as any).from("access_role_catalog").select("*").order("sort_order", { ascending: true });
 
-    setCompanies(c);
+          const { data: ap } = await (supabase as any).from("access_profiles").select("id,name,code,description,active,module_permissions").order("name", { ascending: true });
+setCompanies(c);
     setDepartments(d);
     setCenters(w);
     setPositions(p);
     setDocumentTypes(dt);
     setRoles(r || []);
-  }
+        setAccessProfiles(ap || []);
+}
 
   async function loadRows() {
     setLoading(true);
@@ -581,7 +588,8 @@ function AccessMaintenancePage() {
       full_name: safeText(editor.full_name),
       email: safeText(editor.email).toLowerCase(),
       role: safeText(editor.role) || "employee",
-      company_name: safeText(editor.company_name) || "Grupo Marport",
+            access_profile_id: safeText(editor.access_profile_id) || null,
+company_name: safeText(editor.company_name) || "Grupo Marport",
       department: safeText(editor.department) || null,
       work_center: safeText(editor.work_center) || null,
       job_position: safeText(editor.job_position) || null,
@@ -863,6 +871,8 @@ function AccessMaintenancePage() {
           <main className="min-w-0 space-y-3">
             {catalog === "celebrations" ? (
               <CelebrationsPage />
+            ) : isAccessProfiles ? (
+              <AccessProfilesMatrix />
             ) : (
               <>
             <section className="rounded-2xl border border-slate-200 bg-white p-3 shadow-sm">
@@ -965,12 +975,24 @@ function AccessMaintenancePage() {
               <div className="space-y-2"><Label>Activo</Label><div className="flex items-center gap-3 rounded-2xl border px-3 py-2"><Switch checked={normalizeBool(editor.active)} onCheckedChange={(checked) => setEditor((prev) => ({ ...prev, active: checked }))} /><span className="text-sm text-slate-600">{normalizeBool(editor.active) ? "Trabajador activo" : "Trabajador inactivo"}</span></div></div>
               <div className="space-y-2 md:col-span-2"><Label>Nombre completo</Label><Input value={editor.full_name || ""} onChange={(e) => setEditor((prev) => ({ ...prev, full_name: e.target.value }))} /></div>
               <div className="space-y-2"><Label>Email / usuario</Label><Input type="email" value={editor.email || ""} onChange={(e) => setEditor((prev) => ({ ...prev, email: e.target.value }))} /></div>
-              <div className="space-y-2"><Label>Rol</Label><Select value={editor.role || "employee"} onValueChange={(value) => setEditor((prev) => ({ ...prev, role: value }))}><SelectTrigger><SelectValue placeholder="Rol" /></SelectTrigger><SelectContent>{activeOptions(roles).length ? activeOptions(roles).map((r) => <SelectItem key={r.id || r.role} value={r.role}>{r.label || r.role}</SelectItem>) : <><SelectItem value="admin">Admin</SelectItem><SelectItem value="rrhh">RRHH</SelectItem><SelectItem value="employee">Empleado</SelectItem></>}</SelectContent></Select></div>
+              <div className="space-y-2"><Label>Rol técnico</Label><Select value={editor.role || "employee"} onValueChange={(value) => setEditor((prev) => ({ ...prev, role: value }))}><SelectTrigger><SelectValue placeholder="Rol técnico" /></SelectTrigger><SelectContent>{activeOptions(roles).length ? activeOptions(roles).map((r) => <SelectItem key={r.id || r.role} value={r.role}>{r.label || r.role}</SelectItem>) : <><SelectItem value="admin">Admin</SelectItem><SelectItem value="rrhh">RRHH</SelectItem><SelectItem value="employee">Empleado</SelectItem></>}</SelectContent></Select><p className="text-xs text-slate-500">Rol base del sistema. No define permisos modulares.</p></div>
+              <div className="space-y-2"><Label>Perfil de acceso</Label><Select value={editor.access_profile_id || "__none__"} onValueChange={(value) => setEditor((prev) => ({ ...prev, access_profile_id: value === "__none__" ? "" : value }))}><SelectTrigger><SelectValue placeholder="Perfil de acceso" /></SelectTrigger><SelectContent><SelectItem value="__none__">Sin perfil de acceso</SelectItem>{activeOptions(accessProfiles).map((ap) => <SelectItem key={ap.id} value={ap.id}>{ap.name || ap.code}</SelectItem>)}</SelectContent></Select><p className="text-xs text-slate-500">Este campo controla los accesos reales: profiles.access_profile_id → access_profiles.module_permissions.</p></div>
+              <div className="md:col-span-2 rounded-2xl border border-amber-200 bg-amber-50 p-3 text-xs text-amber-900">
+                <div className="font-black uppercase tracking-[0.18em]">Debug perfil de acceso</div>
+                <div className="mt-2 grid gap-1 md:grid-cols-2">
+                  <div><b>Email:</b> {editor.email || "—"}</div>
+                  <div><b>Rol técnico:</b> {editor.role || "—"}</div>
+                  <div><b>Área:</b> {editor.department || "—"}</div>
+                  <div><b>Puesto:</b> {editor.job_position || "—"}</div>
+                  <div><b>access_profile_id:</b> {editor.access_profile_id || "—"}</div>
+                  <div><b>Perfil:</b> {accessProfiles.find((ap) => ap.id === editor.access_profile_id)?.name || "—"}</div>
+                </div>
+              </div>
               <div className="space-y-2"><Label>Empresa</Label><Select value={editor.company_name || "Grupo Marport"} onValueChange={(value) => setEditor((prev) => ({ ...prev, company_name: value }))}><SelectTrigger><SelectValue placeholder="Empresa" /></SelectTrigger><SelectContent>{activeOptions(companies).map((c) => <SelectItem key={c.id || c.name} value={c.name}>{c.name}</SelectItem>)}{!activeOptions(companies).length ? <SelectItem value="Grupo Marport">Grupo Marport</SelectItem> : null}</SelectContent></Select></div>
               <div className="space-y-2"><Label>Área</Label><Select value={editor.department || "__none__"} onValueChange={(value) => setEditor((prev) => ({ ...prev, department: value === "__none__" ? "" : value }))}><SelectTrigger><SelectValue placeholder="Área" /></SelectTrigger><SelectContent><SelectItem value="__none__">Sin área</SelectItem>{activeOptions(departments).map((d) => <SelectItem key={d.id || d.name} value={d.name}>{d.name}</SelectItem>)}</SelectContent></Select></div>
               <div className="space-y-2"><Label>Centro</Label><Select value={editor.work_center || "__none__"} onValueChange={(value) => setEditor((prev) => ({ ...prev, work_center: value === "__none__" ? "" : value }))}><SelectTrigger><SelectValue placeholder="Centro" /></SelectTrigger><SelectContent><SelectItem value="__none__">Sin centro</SelectItem>{activeOptions(centers).map((c) => <SelectItem key={c.id || c.name} value={c.name}>{c.name}</SelectItem>)}</SelectContent></Select></div>
               <div className="space-y-2"><Label>Puesto</Label><Select value={editor.job_position || "__none__"} onValueChange={(value) => setEditor((prev) => ({ ...prev, job_position: value === "__none__" ? "" : value }))}><SelectTrigger><SelectValue placeholder="Puesto" /></SelectTrigger><SelectContent><SelectItem value="__none__">Sin puesto</SelectItem>{activeOptions(positions).map((p) => <SelectItem key={p.id || p.name} value={p.name}>{p.name}</SelectItem>)}</SelectContent></Select></div>
-              <div className="space-y-2"><Label>Tipo documento</Label><Select value={editor.document_type || "DNI"} onValueChange={(value) => setEditor((prev) => ({ ...prev, document_type: value }))}><SelectTrigger><SelectValue placeholder="Documento" /></SelectTrigger><SelectContent>{activeOptions(documentTypes).map((d) => <SelectItem key={d.id || d.name} value={d.name || d.code}>{d.name || d.code}</SelectItem>)}<SelectItem value="DNI">DNI</SelectItem><SelectItem value="NIE">NIE</SelectItem><SelectItem value="PASAPORTE">Pasaporte</SelectItem></SelectContent></Select></div>
+              <div className="space-y-2"><Label>Tipo documento</Label><Select value={editor.document_type || "DNI"} onValueChange={(value) => setEditor((prev) => ({ ...prev, document_type: value }))}><SelectTrigger><SelectValue placeholder="Documento" /></SelectTrigger><SelectContent>{Array.from(new Map((activeOptions(documentTypes).length ? activeOptions(documentTypes) : [{ code: "DNI", name: "DNI" }, { code: "NIE", name: "NIE" }, { code: "PASAPORTE", name: "Pasaporte" }, { code: "OTRO", name: "Otro" }]).map((d) => { const value = String(d.code || d.name || "").trim().toUpperCase(); const label = String(d.name || d.code || "").trim(); return [value, { key: d.id || value, value, label }]; })).values()).filter((d) => d.value).map((d) => <SelectItem key={d.key} value={d.value}>{d.label}</SelectItem>)}</SelectContent></Select></div>
               <div className="space-y-2"><Label>Número documento</Label><Input value={editor.document_number || ""} onChange={(e) => setEditor((prev) => ({ ...prev, document_number: e.target.value }))} /></div>
               <div className="space-y-2"><Label>Fecha de nacimiento</Label><Input type="date" value={editor.birth_date || ""} onChange={(e) => setEditor((prev) => ({ ...prev, birth_date: e.target.value }))} /></div>
               <div className="space-y-2"><Label>Teléfono</Label><Input value={editor.phone || ""} onChange={(e) => setEditor((prev) => ({ ...prev, phone: e.target.value }))} /></div>

@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { CalendarDays, ChevronLeft, Newspaper, Search, Star, Clock, Building2 } from "lucide-react";
-import { getPublishedInternalNewsFromItems, loadPublicInternalNews, NEWS_CATEGORIES, type InternalNewsItem } from "@/lib/grupmarInternalNews";
+import { getPublishedInternalNewsFromItems, loadPublicInternalNews, markInternalNewsAsRead, NEWS_CATEGORIES, type InternalNewsItem } from "@/lib/grupmarInternalNews";
 import { applySavedTheme } from "@/lib/grupmarTheme";
 import { useEffect } from "react";
 
@@ -67,6 +67,16 @@ function NewsPage() {
 
   const published = useMemo(() => getPublishedInternalNewsFromItems(newsRows, profile, today), [newsRows, profile, today]);
   const todayItems = useMemo(() => published.filter((item) => (!item.startAt || item.startAt <= today) && (!item.endAt || item.endAt >= today)), [published, today]);
+
+  // NEWS_PAGE_MARK_READ_CANONICAL_V1
+  useEffect(() => {
+    if (!profile?.id || published.length === 0) return;
+
+    const ids = published.map((item) => item.id).filter(Boolean);
+    markInternalNewsAsRead(profile.id, ids).catch((err) => {
+      console.error("No se pudieron marcar las noticias como leidas.", err);
+    });
+  }, [profile?.id, published]);
 
   const filtered = useMemo(() => {
     const base = mode === "today" ? todayItems : published;

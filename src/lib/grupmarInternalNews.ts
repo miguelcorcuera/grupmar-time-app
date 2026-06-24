@@ -177,6 +177,48 @@ export async function loadPublicInternalNews(): Promise<InternalNewsItem[]> {
   return normalizeNewsArray(data);
 }
 
+// NEWS_READS_CANONICAL_V1
+const CANONICAL_NEWS_UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+export function isCanonicalNewsId(id: string | null | undefined): id is string {
+  return !!id && CANONICAL_NEWS_UUID_RE.test(String(id));
+}
+
+export async function loadMyReadNewsIds(profileId: string | null | undefined): Promise<string[]> {
+  if (!profileId) return [];
+
+  const { data, error } = await (supabase as any)
+    .from("news_reads")
+    .select("news_id")
+    .eq("profile_id", profileId);
+
+  if (error) throw error;
+
+  return (Array.isArray(data) ? data : [])
+    .map((row: any) => String(row?.news_id ?? ""))
+    .filter(isCanonicalNewsId);
+}
+
+export async function markInternalNewsAsRead(profileId: string | null | undefined, newsIds: string[]): Promise<void> {
+  if (!profileId) return;
+
+  const uniqueNewsIds = Array.from(new Set(newsIds.map(String).filter(isCanonicalNewsId)));
+  if (uniqueNewsIds.length === 0) return;
+
+  const readAt = new Date().toISOString();
+  const rows = uniqueNewsIds.map((news_id) => ({
+    profile_id: profileId,
+    news_id,
+    read_at: readAt,
+  }));
+
+  const { error } = await (supabase as any)
+    .from("news_reads")
+    .upsert(rows, { onConflict: "profile_id,news_id" });
+
+  if (error) throw error;
+}
+
 export async function saveInternalNews(items: InternalNewsItem[]) {
   const normalized = items.map((item) => normalizeNewsItem(item));
   const { error } = await (supabase as any).rpc("gmt_save_internal_news_items", {
