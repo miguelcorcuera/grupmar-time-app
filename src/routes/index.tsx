@@ -1188,7 +1188,8 @@ function Home() {
         </header>
         <div id="grupmar-home-fixed-header-spacer" className="h-[96px]" aria-hidden="true" />
 
-        {companyTickerItems.length > 0 && (
+        {/* FASE_1_3A_HOME_INLINE_TICKER_DISABLED_KEEP_DB_CANONICAL */}
+        {false && companyTickerItems.length > 0 && (
           <section className={`border-t ${uiTheme.mode === "dark" ? "border-slate-700 bg-slate-900/88" : "border-sky-100/80 bg-sky-50/72"}`}>
             <style>{`@keyframes grupmarTickerMove { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }`}</style>
             <div className="mx-auto max-w-6xl px-4 py-2">
