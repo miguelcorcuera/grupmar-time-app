@@ -23,6 +23,7 @@ import { Route as AuthenticatedAdminReportsRouteImport } from './routes/_authent
 import { Route as AuthenticatedAdminLettersRouteImport } from './routes/_authenticated/admin/letters'
 import { Route as AuthenticatedAdminInformativoRouteImport } from './routes/_authenticated/admin/informativo'
 import { Route as AuthenticatedAdminEmployeesRouteImport } from './routes/_authenticated/admin/employees'
+import { Route as AuthenticatedAdminEmployeeRequestsRouteImport } from './routes/_authenticated/admin/employee-requests'
 import { Route as AuthenticatedAdminCheckinMessagesRouteImport } from './routes/_authenticated/admin/checkin-messages'
 import { Route as AuthenticatedAdminCelebrationsRouteImport } from './routes/_authenticated/admin/celebrations'
 import { Route as AuthenticatedAdminAttendanceRouteImport } from './routes/_authenticated/admin/attendance'
@@ -107,6 +108,12 @@ const AuthenticatedAdminEmployeesRoute =
     path: '/employees',
     getParentRoute: () => AuthenticatedAdminRouteRoute,
   } as any)
+const AuthenticatedAdminEmployeeRequestsRoute =
+  AuthenticatedAdminEmployeeRequestsRouteImport.update({
+    id: '/employee-requests',
+    path: '/employee-requests',
+    getParentRoute: () => AuthenticatedAdminRouteRoute,
+  } as any)
 const AuthenticatedAdminCheckinMessagesRoute =
   AuthenticatedAdminCheckinMessagesRouteImport.update({
     id: '/checkin-messages',
@@ -162,6 +169,7 @@ export interface FileRoutesByFullPath {
   '/admin/attendance': typeof AuthenticatedAdminAttendanceRoute
   '/admin/celebrations': typeof AuthenticatedAdminCelebrationsRoute
   '/admin/checkin-messages': typeof AuthenticatedAdminCheckinMessagesRoute
+  '/admin/employee-requests': typeof AuthenticatedAdminEmployeeRequestsRoute
   '/admin/employees': typeof AuthenticatedAdminEmployeesRouteWithChildren
   '/admin/informativo': typeof AuthenticatedAdminInformativoRoute
   '/admin/letters': typeof AuthenticatedAdminLettersRoute
@@ -183,6 +191,7 @@ export interface FileRoutesByTo {
   '/admin/attendance': typeof AuthenticatedAdminAttendanceRoute
   '/admin/celebrations': typeof AuthenticatedAdminCelebrationsRoute
   '/admin/checkin-messages': typeof AuthenticatedAdminCheckinMessagesRoute
+  '/admin/employee-requests': typeof AuthenticatedAdminEmployeeRequestsRoute
   '/admin/employees': typeof AuthenticatedAdminEmployeesRouteWithChildren
   '/admin/informativo': typeof AuthenticatedAdminInformativoRoute
   '/admin/letters': typeof AuthenticatedAdminLettersRoute
@@ -207,6 +216,7 @@ export interface FileRoutesById {
   '/_authenticated/admin/attendance': typeof AuthenticatedAdminAttendanceRoute
   '/_authenticated/admin/celebrations': typeof AuthenticatedAdminCelebrationsRoute
   '/_authenticated/admin/checkin-messages': typeof AuthenticatedAdminCheckinMessagesRoute
+  '/_authenticated/admin/employee-requests': typeof AuthenticatedAdminEmployeeRequestsRoute
   '/_authenticated/admin/employees': typeof AuthenticatedAdminEmployeesRouteWithChildren
   '/_authenticated/admin/informativo': typeof AuthenticatedAdminInformativoRoute
   '/_authenticated/admin/letters': typeof AuthenticatedAdminLettersRoute
@@ -231,6 +241,7 @@ export interface FileRouteTypes {
     | '/admin/attendance'
     | '/admin/celebrations'
     | '/admin/checkin-messages'
+    | '/admin/employee-requests'
     | '/admin/employees'
     | '/admin/informativo'
     | '/admin/letters'
@@ -252,6 +263,7 @@ export interface FileRouteTypes {
     | '/admin/attendance'
     | '/admin/celebrations'
     | '/admin/checkin-messages'
+    | '/admin/employee-requests'
     | '/admin/employees'
     | '/admin/informativo'
     | '/admin/letters'
@@ -275,6 +287,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/attendance'
     | '/_authenticated/admin/celebrations'
     | '/_authenticated/admin/checkin-messages'
+    | '/_authenticated/admin/employee-requests'
     | '/_authenticated/admin/employees'
     | '/_authenticated/admin/informativo'
     | '/_authenticated/admin/letters'
@@ -394,6 +407,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminEmployeesRouteImport
       parentRoute: typeof AuthenticatedAdminRouteRoute
     }
+    '/_authenticated/admin/employee-requests': {
+      id: '/_authenticated/admin/employee-requests'
+      path: '/employee-requests'
+      fullPath: '/admin/employee-requests'
+      preLoaderRoute: typeof AuthenticatedAdminEmployeeRequestsRouteImport
+      parentRoute: typeof AuthenticatedAdminRouteRoute
+    }
     '/_authenticated/admin/checkin-messages': {
       id: '/_authenticated/admin/checkin-messages'
       path: '/checkin-messages'
@@ -467,6 +487,7 @@ interface AuthenticatedAdminRouteRouteChildren {
   AuthenticatedAdminAttendanceRoute: typeof AuthenticatedAdminAttendanceRoute
   AuthenticatedAdminCelebrationsRoute: typeof AuthenticatedAdminCelebrationsRoute
   AuthenticatedAdminCheckinMessagesRoute: typeof AuthenticatedAdminCheckinMessagesRoute
+  AuthenticatedAdminEmployeeRequestsRoute: typeof AuthenticatedAdminEmployeeRequestsRoute
   AuthenticatedAdminEmployeesRoute: typeof AuthenticatedAdminEmployeesRouteWithChildren
   AuthenticatedAdminInformativoRoute: typeof AuthenticatedAdminInformativoRoute
   AuthenticatedAdminLettersRoute: typeof AuthenticatedAdminLettersRoute
@@ -487,6 +508,8 @@ const AuthenticatedAdminRouteRouteChildren: AuthenticatedAdminRouteRouteChildren
     AuthenticatedAdminCelebrationsRoute: AuthenticatedAdminCelebrationsRoute,
     AuthenticatedAdminCheckinMessagesRoute:
       AuthenticatedAdminCheckinMessagesRoute,
+    AuthenticatedAdminEmployeeRequestsRoute:
+      AuthenticatedAdminEmployeeRequestsRoute,
     AuthenticatedAdminEmployeesRoute:
       AuthenticatedAdminEmployeesRouteWithChildren,
     AuthenticatedAdminInformativoRoute: AuthenticatedAdminInformativoRoute,

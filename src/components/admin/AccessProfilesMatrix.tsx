@@ -29,6 +29,12 @@ const PERMISSIONS: PermissionDefinition[] = [
   { key: "admin.dashboard", label: "Dashboard", group: "Panel admin", help: "Resumen general del panel administrador." },
   { key: "admin.attendance", label: "Marcaciones", group: "Tiempo", help: "Registros, mapa y control de marcaciones." },
   { key: "admin.shifts", label: "Turnos", group: "Tiempo", help: "Planificador de turnos y horarios." },
+  { key: "staff_requests.view_team", label: "Ver solicitudes equipo", group: "Solicitudes", help: "Consultar solicitudes del equipo dentro del alcance de jefatura." },
+  { key: "staff_requests.view_all", label: "Ver solicitudes global", group: "Solicitudes", help: "Consultar todas las solicitudes por RRHH, gerencia o administracion." },
+  { key: "staff_requests.manage_team", label: "Gestionar solicitudes equipo", group: "Solicitudes", help: "Revisar, aprobar, rechazar o postergar solicitudes del equipo." },
+  { key: "staff_requests.manage_all", label: "Gestionar solicitudes global", group: "Solicitudes", help: "Gestionar cualquier solicitud por RRHH, gerencia o administracion." },
+  { key: "labor_requests.apply", label: "Aplicar solicitudes RRHH", group: "Solicitudes", help: "Aplicar administrativamente solicitudes ya aprobadas." },
+  { key: "employee_requests.audit", label: "Auditar solicitudes", group: "Solicitudes", help: "Consultar trazabilidad y auditoria de solicitudes." },
   { key: "admin.reports", label: "Informes", group: "Reportes", help: "Balances mensuales y reportes." },
 
   { key: "admin.checkin_messages", label: "Comunicados", group: "Comunicación", help: "Marquesina y comunicados antes de fichar." },

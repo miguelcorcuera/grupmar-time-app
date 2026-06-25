@@ -39,7 +39,8 @@ type AdminPermission =
   | "admin.security"
   | "admin.letters"
   | "admin.settings"
-  | "admin.celebrations";
+  | "admin.celebrations"
+  | "staff_requests.view_team";
 
 type PermissionMap = Record<string, boolean>;
 
@@ -50,6 +51,7 @@ const links = [
   { to: "/admin/access-maintenance", label: "Mantenimiento", icon: KeyRound, hint: "Usuarios, claves y permisos", permission: "admin.access_maintenance" },
 
   { to: "/admin/reports", label: "Informes", icon: BarChart3, hint: "Balance mensual", permission: "admin.reports" },
+  { to: "/admin/employee-requests", label: "Solicitudes", icon: FileText, hint: "Personal y permisos", permission: "staff_requests.view_team" },
   { to: "/admin/checkin-messages", label: "Comunicados", icon: WandSparkles, hint: "Vista al fichar", permission: "admin.checkin_messages" },
   { to: "/admin/informativo", label: "Informativo", icon: Newspaper, hint: "Noticias internas", permission: "admin.informativo" },
   { to: "/admin/celebrations", label: "Celebraciones", icon: CalendarDays, hint: "Cumpleaños, santos y festivos", permission: "admin.celebrations" },
@@ -73,6 +75,7 @@ function permissionForPath(pathname: string): AdminPermission | null {
   if (clean === "/admin/shifts") return "admin.shifts";
   if (clean === "/admin/access-maintenance") return "admin.access_maintenance";
   if (clean === "/admin/reports") return "admin.reports";
+  if (clean === "/admin/employee-requests") return "staff_requests.view_team";
   if (clean === "/admin/checkin-messages") return "admin.checkin_messages";
   if (clean === "/admin/informativo") return "admin.informativo";
   if (clean === "/admin/celebrations") return "admin.celebrations";
